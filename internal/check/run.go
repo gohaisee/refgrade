@@ -29,7 +29,8 @@ func (a ModuleAdapter) RelPath(file string) (string, error) {
 func (a ModuleAdapter) GoSourceFiles() []GoFile {
 	var files []GoFile
 	for _, pkg := range a.Mod.Packages {
-		for _, name := range pkg.GoFiles {
+		names := append(append([]string(nil), pkg.GoFiles...), pkg.GoTestFiles...)
+		for _, name := range names {
 			abs := filepath.Join(pkg.Dir, name)
 			rel, err := a.Mod.RelPath(abs)
 			if err != nil {
@@ -158,9 +159,10 @@ func RunAll(ctx context.Context, mod *project.Module, cfg *refgradeconfig.Config
 
 	if opts.WithSecurity {
 		secFindings, err := runGovulncheck(ctx, view)
-		if err == nil {
-			all = append(all, secFindings...)
+		if err != nil {
+			return nil, nil, err
 		}
+		all = append(all, secFindings...)
 	}
 
 	return SetMeta(all, translate), statuses, nil
