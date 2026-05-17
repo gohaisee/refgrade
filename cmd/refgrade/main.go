@@ -42,6 +42,8 @@ func run(args []string) int {
 		return runDetectCLI(args[1:])
 	case "explain":
 		return runExplainCLI(args[1:])
+	case "init":
+		return runInitCLI(args[1:])
 	case "help", "-h", "--help":
 		printUsage(os.Stdout)
 		return exitOK
@@ -58,16 +60,18 @@ func printUsage(w io.Writer) {
 	fmt.Fprintln(w, "  scan     scan a go module for refactor readiness")
 	fmt.Fprintln(w, "  detect   detect stack libraries in a go module")
 	fmt.Fprintln(w, "  explain  print when/why/fix for a check id")
+	fmt.Fprintln(w, "  init     write .refgrade.yaml template")
 }
 
 func runScanCLI(args []string) int {
 	fs := flag.NewFlagSet("scan", flag.ContinueOnError)
 	fs.SetOutput(os.Stderr)
 	lang := fs.String("lang", "", "report language (en, ru)")
-	format := fs.String("format", "text", "output format (text, markdown, json)")
+	format := fs.String("format", "text", "output format (text, markdown, json, sarif)")
 	var output string
 	fs.StringVar(&output, "output", "", "write report to file")
 	fs.StringVar(&output, "o", "", "write report to file")
+	withSecurity := fs.Bool("with-security", false, "run govulncheck when available")
 	rest, err := parseFlags(fs, args)
 	if err != nil {
 		return exitError
@@ -76,12 +80,42 @@ func runScanCLI(args []string) int {
 	if len(rest) > 0 {
 		path = rest[0]
 	}
-	code, err := runScan(context.Background(), path, *lang, *format, output)
+	code, err := runScan(context.Background(), path, *lang, *format, output, *withSecurity)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return exitError
 	}
 	return code
+}
+
+func runInitCLI(args []string) int {
+	fs := flag.NewFlagSet("init", flag.ContinueOnError)
+	fs.SetOutput(os.Stderr)
+	rest, err := parseFlags(fs, args)
+	if err != nil {
+		return exitError
+	}
+	path := "."
+	if len(rest) > 0 {
+		path = rest[0]
+	}
+	if err := runInit(path); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		return exitError
+	}
+	return exitOK
+}
+
+func runInit(path string) error {
+	root, err := project.ModuleRoot(path)
+	if err != nil {
+		return err
+	}
+	target := root + string(os.PathSeparator) + ".refgrade.yaml"
+	if _, err := os.Stat(target); err == nil {
+		return fmt.Errorf("%s already exists", target)
+	}
+	return os.WriteFile(target, []byte(refgradeconfig.InitTemplate()), 0o644)
 }
 
 func runDetectCLI(args []string) int {
@@ -171,7 +205,7 @@ func needsValue(fs *flag.FlagSet, arg string) bool {
 	return true
 }
 
-func runScan(ctx context.Context, path, flagLang, formatName, output string) (int, error) {
+func runScan(ctx context.Context, path, flagLang, formatName, output string, withSecurity bool) (int, error) {
 	modRoot, err := project.ModuleRoot(path)
 	if err != nil {
 		return exitError, err
@@ -189,12 +223,30 @@ func runScan(ctx context.Context, path, flagLang, formatName, output string) (in
 		return exitError, err
 	}
 
+	cfg, err := refgradeconfig.Load(modRoot)
+	if err != nil {
+		return exitError, err
+	}
+
 	mod, err := project.Load(ctx, path)
 	if err != nil {
 		return exitError, err
 	}
 
-	res, err := engine.Scan(ctx, mod, check.Catalog(), b.T)
+	stacks, err := detect.Detect(ctx, mod)
+	if err != nil {
+		return exitError, err
+	}
+	stackNames := make([]string, len(stacks))
+	for i, s := range stacks {
+		stackNames[i] = s.Name
+	}
+
+	res, err := engine.Scan(ctx, mod, engine.Options{
+		Config:       cfg,
+		Stacks:       stackNames,
+		WithSecurity: withSecurity,
+	}, b.T)
 	if err != nil {
 		return exitError, err
 	}

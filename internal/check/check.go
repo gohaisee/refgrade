@@ -3,10 +3,14 @@ package check
 import (
 	"context"
 	"fmt"
+
+	"github.com/gohaisee/refgrade/internal/astutil"
+	"github.com/gohaisee/refgrade/internal/refgradeconfig"
 )
 
 const (
 	SeverityOK   = "ok"
+	SeverityInfo = "info"
 	SeverityWarn = "warn"
 	SeverityFail = "fail"
 	SeverityNA   = "n/a"
@@ -34,6 +38,11 @@ type ModuleView interface {
 	Root() string
 	RelPath(file string) (string, error)
 	GoSourceFiles() []GoFile
+	Packages() []PackageInfo
+	GoModContent() []byte
+	Excluded(relPath string) bool
+	Config() *refgradeconfig.Config
+	ASTPool(filter astutil.Filter) (*astutil.Pool, error)
 }
 
 // one non-test Go source with absolute path
@@ -42,19 +51,18 @@ type GoFile struct {
 	RelPath string
 }
 
-// Catalog returns all built-in checkers
-func Catalog() []Checker {
-	return []Checker{NewCfg01(), NewErr01(), NewErr03()}
+// package info for layout and import checks
+type PackageInfo struct {
+	ImportPath string
+	Dir        string
+	RelDir     string
+	GoFiles    []string
 }
 
 // Known reports whether id is a built-in checker
 func Known(id string) bool {
-	for _, ch := range Catalog() {
-		if ch.ID() == id {
-			return true
-		}
-	}
-	return false
+	_, ok := MetaForID(id)
+	return ok
 }
 
 // Explain returns localized when/why/fix for a check id

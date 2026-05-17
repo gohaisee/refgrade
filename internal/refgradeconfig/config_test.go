@@ -3,6 +3,7 @@ package refgradeconfig
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -73,6 +74,66 @@ func TestResolveLang_unsupported(t *testing.T) {
 	_, err := ResolveLang("de", t.TempDir())
 	if err == nil {
 		t.Fatal("expected error")
+	}
+}
+
+func TestLoad_profileAndChecks(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	writeYAML(t, dir, `lang: en
+profile: strict
+checks.cfg-01: off
+exclude.0: "**/gen/**"
+layers.0.path: internal/service
+layers.0.forbid.0: github.com/jackc/pgx/v5
+`)
+	cfg, err := Load(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if cfg.Profile != ProfileStrict {
+		t.Fatalf("profile = %q", cfg.Profile)
+	}
+	if cfg.CheckEnabled("cfg-01") {
+		t.Fatal("cfg-01 should be off")
+	}
+	if len(cfg.Exclude) != 1 {
+		t.Fatalf("exclude = %v", cfg.Exclude)
+	}
+	if len(cfg.Layers) != 1 || cfg.Layers[0].Path != "internal/service" {
+		t.Fatalf("layers = %v", cfg.Layers)
+	}
+}
+
+func TestExcludeMatcher(t *testing.T) {
+	t.Parallel()
+
+	m := NewExcludeMatcher([]string{"**/generated/**", "*_gen.go"})
+	if !m.Excluded("internal/generated/foo.go") {
+		t.Fatal("expected **/generated/** match")
+	}
+	if !m.Excluded("internal/foo_gen.go") {
+		t.Fatal("expected *_gen.go match")
+	}
+}
+
+func TestApplyProfile(t *testing.T) {
+	t.Parallel()
+
+	if ApplyProfile(ProfileStrict, "x", SeverityWarn) != SeverityFail {
+		t.Fatal("strict should upgrade warn")
+	}
+	if ApplyProfile(ProfileMinimal, "x", SeverityWarn) != SeverityInfo {
+		t.Fatal("minimal should downgrade warn")
+	}
+}
+
+func TestInitTemplate(t *testing.T) {
+	t.Parallel()
+
+	if !strings.Contains(InitTemplate(), "lang: en") {
+		t.Fatal("expected template")
 	}
 }
 

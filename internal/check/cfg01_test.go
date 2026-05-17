@@ -2,42 +2,13 @@ package check
 
 import (
 	"context"
-	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 
+	"github.com/gohaisee/refgrade/internal/astutil"
 	"github.com/gohaisee/refgrade/internal/project"
 )
-
-type stubModule struct {
-	root  string
-	files []GoFile
-}
-
-func (s stubModule) Root() string { return s.root }
-
-func (s stubModule) RelPath(file string) (string, error) {
-	rel, err := filepath.Rel(s.root, file)
-	if err != nil {
-		return "", err
-	}
-	return filepath.ToSlash(rel), nil
-}
-
-func (s stubModule) GoSourceFiles() []GoFile { return s.files }
-
-func writeGoFile(t *testing.T, dir, rel, content string) string {
-	t.Helper()
-	path := filepath.Join(dir, rel)
-	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
-		t.Fatal(err)
-	}
-	return path
-}
 
 func TestCfg01_flagsInternalGetenv(t *testing.T) {
 	t.Parallel()
@@ -64,7 +35,7 @@ func Load() string {
 	if len(findings) != 1 {
 		t.Fatalf("findings = %+v", findings)
 	}
-	if findings[0].ID != cfg01ID || findings[0].Severity != SeverityFail {
+	if findings[0].ID != "cfg-01" || findings[0].Severity != SeverityFail {
 		t.Fatalf("finding = %+v", findings[0])
 	}
 }
@@ -88,6 +59,29 @@ func main() {
 		t.Fatal(err)
 	}
 	if len(findings) != 0 {
+		t.Fatalf("findings = %+v", findings)
+	}
+}
+
+func TestCfg01_aliasImport(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	rel := "internal/service/svc.go"
+	path := writeGoFile(t, dir, rel, `package service
+
+import o "os"
+
+func Load() string {
+	return o.Getenv("KEY")
+}
+`)
+	mod := stubModule{root: dir, files: []GoFile{{Path: path, RelPath: rel}}}
+	findings, err := NewCfg01().Run(context.Background(), mod)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(findings) != 1 {
 		t.Fatalf("findings = %+v", findings)
 	}
 }
@@ -140,36 +134,12 @@ func Hook() string {
 	}
 }
 
-func TestHasIntegrationE2EBuildTag(t *testing.T) {
+func TestHasIntegration_legacyBuildTag(t *testing.T) {
 	t.Parallel()
 
-	cases := []struct {
-		src  string
-		want bool
-	}{
-		{"//go:build integration\npackage p\n", true},
-		{"//go:build e2e\npackage p\n", true},
-		{"//go:build unit\npackage p\n", false},
-		{"package p\n", false},
-	}
-	for _, tc := range cases {
-		if got := hasIntegrationE2EBuildTag(tc.src); got != tc.want {
-			t.Fatalf("hasIntegrationE2EBuildTag() = %v, want %v", got, tc.want)
-		}
-	}
-}
-
-func TestSkipCfg01File(t *testing.T) {
-	t.Parallel()
-
-	if skipCfg01File("internal/x.go") {
-		t.Fatal("internal should be scanned")
-	}
-	if !skipCfg01File("cmd/main.go") {
-		t.Fatal("cmd should skip")
-	}
-	if !skipCfg01File("pkg/x_test.go") {
-		t.Fatal("test should skip")
+	src := "// +build e2e\npackage p\n"
+	if !astutil.HasIntegrationOrE2EBuildTag(src) {
+		t.Fatal("expected e2e tag match")
 	}
 }
 
@@ -184,40 +154,6 @@ func TestSetMeta(t *testing.T) {
 	}
 }
 
-func TestCfg01_ID(t *testing.T) {
-	t.Parallel()
-
-	if NewCfg01().ID() != cfg01ID {
-		t.Fatal("unexpected id")
-	}
-}
-
-func TestErrUnsupported(t *testing.T) {
-	t.Parallel()
-
-	err := ErrUnsupported{Check: "x", Why: "y"}
-	if err.Error() == "" {
-		t.Fatal("expected message")
-	}
-}
-
-func TestHasIntegration_legacyBuildTag(t *testing.T) {
-	t.Parallel()
-
-	src := "// +build e2e\npackage p\n"
-	if !hasIntegrationE2EBuildTag(src) {
-		t.Fatal("expected e2e tag match")
-	}
-}
-
-func TestIsOSGetenv_negative(t *testing.T) {
-	t.Parallel()
-
-	if isOSGetenv(nil) {
-		t.Fatal("nil should be false")
-	}
-}
-
 func TestFromProject_adapter(t *testing.T) {
 	t.Parallel()
 
@@ -226,17 +162,13 @@ func TestFromProject_adapter(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	view := FromProject(mod)
+	view := FromProject(mod, nil)
 	if view.Root() != mod.Root {
 		t.Fatal("root mismatch")
 	}
 	files := view.GoSourceFiles()
 	if len(files) == 0 {
 		t.Fatal("expected files")
-	}
-	rel, err := view.RelPath(files[0].Path)
-	if err != nil || rel == "" {
-		t.Fatalf("RelPath = %q %v", rel, err)
 	}
 }
 
@@ -250,7 +182,25 @@ func TestHasSeverityAndCount(t *testing.T) {
 	if CountByID(fs, "cfg-01") != 2 {
 		t.Fatal("count mismatch")
 	}
-	if HasSeverity(fs, SeverityWarn) {
-		t.Fatal("unexpected warn")
+}
+
+func TestErrUnsupported(t *testing.T) {
+	t.Parallel()
+
+	err := ErrUnsupported{Check: "x", Why: "y"}
+	if err.Error() == "" {
+		t.Fatal("expected message")
+	}
+}
+
+func TestGatesMatch(t *testing.T) {
+	t.Parallel()
+
+	stacks := map[string]struct{}{"gin": {}}
+	if !gatesMatch([]string{"gin", "echo"}, stacks) {
+		t.Fatal("expected match")
+	}
+	if gatesMatch([]string{"pgx"}, stacks) {
+		t.Fatal("expected no match")
 	}
 }

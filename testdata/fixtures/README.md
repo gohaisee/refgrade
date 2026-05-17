@@ -8,8 +8,14 @@ mini go modules used in tests — each directory has its own `go.mod` and target
 | `bad-default-client/` | err-03 (fail) — `http.DefaultClient` in `internal/service` |
 | `bad-ignored-error/` | err-01 (warn) — `_ = err` and empty `if err != nil {}` |
 | `good-minimal/` | baseline — getenv only in `cmd/` and `internal/config` |
-| `bad-layers/` | lyr-01, lyr-02 (planned) |
-| `bad-sql-loop/` | sql-01 (planned) |
+| `bad-layers/` | lyr-01, lyr-02 (fail) |
+| `bad-hardcoded-secret/` | cfg-03 (fail) |
+| `bad-zero-timeout-client/` | err-04 (fail) |
+| `bad-no-config/` | cfg-02 (warn) |
+| `bad-panic-internal/` | err-02 (warn) |
+| `bad-fmt-print/` | obs-01 (warn) |
+| `bad-missing-tests/` | tst-01 (warn) |
+| `bad-sql-loop/` | sql-01 (planned, gated) |
 | `bad-gql-resolver/` | gql-01 (planned) |
 | `bad-dead-code/` | dead-01 (planned) |
 

@@ -22,6 +22,7 @@ type Package struct {
 	ImportPath string
 	Dir        string
 	GoFiles    []string
+	GoTestFiles []string
 }
 
 // walks up from path to directory with go.mod
@@ -89,10 +90,11 @@ func parseModulePath(data []byte) string {
 }
 
 type listPackageJSON struct {
-	ImportPath string   `json:"ImportPath"`
-	Dir        string   `json:"Dir"`
-	GoFiles    []string `json:"GoFiles"`
-	Error      *struct {
+	ImportPath  string   `json:"ImportPath"`
+	Dir         string   `json:"Dir"`
+	GoFiles     []string `json:"GoFiles"`
+	GoTestFiles []string `json:"GoTestFiles"`
+	Error       *struct {
 		Err string `json:"Err"`
 	} `json:"Error"`
 }
@@ -122,9 +124,10 @@ func listPackages(ctx context.Context, root string) ([]*Package, error) {
 			continue
 		}
 		pkgs = append(pkgs, &Package{
-			ImportPath: raw.ImportPath,
-			Dir:        raw.Dir,
-			GoFiles:    append([]string(nil), raw.GoFiles...),
+			ImportPath:  raw.ImportPath,
+			Dir:         raw.Dir,
+			GoFiles:     append([]string(nil), raw.GoFiles...),
+			GoTestFiles: append([]string(nil), raw.GoTestFiles...),
 		})
 	}
 	return pkgs, nil
