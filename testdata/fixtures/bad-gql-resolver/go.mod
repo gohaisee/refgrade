@@ -1,0 +1,22 @@
+module github.com/gohaisee/refgrade/fixtures/bad-gql-resolver
+
+go 1.22
+
+require (
+	github.com/99designs/gqlgen v0.17.49
+	github.com/jackc/pgx/v5 v5.7.2
+)
+
+require (
+	github.com/agnivade/levenshtein v1.1.1 // indirect
+	github.com/google/uuid v1.6.0 // indirect
+	github.com/gorilla/websocket v1.5.0 // indirect
+	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
+	github.com/jackc/pgpassfile v1.0.0 // indirect
+	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
+	github.com/mitchellh/mapstructure v1.5.0 // indirect
+	github.com/sosodev/duration v1.3.1 // indirect
+	github.com/vektah/gqlparser/v2 v2.5.16 // indirect
+	golang.org/x/crypto v0.31.0 // indirect
+	golang.org/x/text v0.21.0 // indirect
+)
