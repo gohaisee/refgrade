@@ -64,19 +64,22 @@ func isSQLDataCall(f *astutil.File, call *ast.CallExpr) bool {
 	if !ok {
 		return false
 	}
-	if _, ok := sqlMethodNames[sel.Sel.Name]; ok {
-		return true
-	}
-	imp, name, ok := f.Selector(sel)
-	if !ok {
+	name := sel.Sel.Name
+	if imp, resolved, ok := selectorImport(f, sel); ok {
+		if methods, ok := sqlPackageCalls[imp]; ok {
+			_, ok = methods[resolved]
+			return ok
+		}
+		if isSQLStorageImport(imp) {
+			_, ok = sqlMethodNames[resolved]
+			return ok
+		}
 		return false
 	}
-	methods, ok := sqlPackageCalls[imp]
-	if !ok {
+	if _, ok := sqlMethodNames[name]; !ok {
 		return false
 	}
-	_, ok = methods[name]
-	return ok
+	return looksLikeDBReceiver(sel.X) && fileHasSQLStorageImport(f)
 }
 
 func isPoolOpenCall(f *astutil.File, call *ast.CallExpr) bool {
@@ -748,9 +751,14 @@ func (c *Gorm02) Run(ctx context.Context, mod ModuleView) ([]Finding, error) {
 	sev := effectiveSeverity(mod, c.ID(), SeverityWarn)
 	var findings []Finding
 	var inListFn bool
+	var lastGormFile string
 	pool.Inspect(func(f *astutil.File, n ast.Node) bool {
 		if !fileImportsGorm(f) {
 			return true
+		}
+		if f.RelPath != lastGormFile {
+			lastGormFile = f.RelPath
+			inListFn = false
 		}
 		if fn, ok := n.(*ast.FuncDecl); ok && fn.Name != nil {
 			inListFn = isListFuncName(fn.Name.Name)

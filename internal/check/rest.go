@@ -607,8 +607,15 @@ func hasDevBuildTag(src string) bool {
 
 func buildTagHasDev(expr string) bool {
 	for _, part := range strings.FieldsFunc(expr, func(r rune) bool {
-		return r == ' ' || r == '\t' || r == '|' || r == '&' || r == '!' || r == '(' || r == ')'
+		return r == ' ' || r == '\t' || r == '|' || r == '&' || r == '(' || r == ')'
 	}) {
+		part = strings.TrimSpace(part)
+		if part == "" {
+			continue
+		}
+		if strings.HasPrefix(part, "!") {
+			continue
+		}
 		if part == "dev" || part == "development" {
 			return true
 		}

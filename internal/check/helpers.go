@@ -1,6 +1,7 @@
 package check
 
 import (
+	"go/ast"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -147,6 +148,49 @@ func layerForbidFindings(mod ModuleView, id string) []Finding {
 func applyLayerSeverity(mod ModuleView, id string, f Finding) Finding {
 	f.Severity = effectiveSeverity(mod, id, f.Severity)
 	return f
+}
+
+func isSQLStorageImport(imp string) bool {
+	switch {
+	case imp == "database/sql",
+		strings.HasPrefix(imp, "github.com/jackc/pgx"),
+		imp == "github.com/jmoiron/sqlx",
+		strings.HasPrefix(imp, "gorm.io/"),
+		strings.HasPrefix(imp, "entgo.io/"):
+		return true
+	default:
+		return false
+	}
+}
+
+func fileHasSQLStorageImport(f *astutil.File) bool {
+	for _, imp := range f.Imports {
+		if isSQLStorageImport(imp) {
+			return true
+		}
+	}
+	return false
+}
+
+func looksLikeDBReceiver(expr ast.Expr) bool {
+	switch v := expr.(type) {
+	case *ast.Ident:
+		return isDBLikeName(v.Name)
+	case *ast.SelectorExpr:
+		return isDBLikeName(v.Sel.Name)
+	default:
+		return false
+	}
+}
+
+func isDBLikeName(name string) bool {
+	name = strings.ToLower(name)
+	switch name {
+	case "db", "repo", "store", "pool", "conn", "tx", "gorm", "sqlx", "ent", "client", "database":
+		return true
+	default:
+		return strings.HasSuffix(name, "db") || strings.HasSuffix(name, "repo")
+	}
 }
 
 func checkDisabled(mod ModuleView, id string) bool {
