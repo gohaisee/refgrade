@@ -419,3 +419,13 @@ func TestFixturePathsExist(t *testing.T) {
 		}
 	}
 }
+
+func TestBuildTagHasDev_negation(t *testing.T) {
+	t.Parallel()
+	if buildTagHasDev("!dev") {
+		t.Fatal("!dev must not count as dev build")
+	}
+	if !buildTagHasDev("dev") {
+		t.Fatal("dev must count as dev build")
+	}
+}
