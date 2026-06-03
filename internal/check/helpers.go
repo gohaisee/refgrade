@@ -1,7 +1,7 @@
 package check
 
 import (
-	"context"
+	"go/ast"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -150,30 +150,54 @@ func applyLayerSeverity(mod ModuleView, id string, f Finding) Finding {
 	return f
 }
 
+func isSQLStorageImport(imp string) bool {
+	switch {
+	case imp == "database/sql",
+		strings.HasPrefix(imp, "github.com/jackc/pgx"),
+		imp == "github.com/jmoiron/sqlx",
+		strings.HasPrefix(imp, "gorm.io/"),
+		strings.HasPrefix(imp, "entgo.io/"):
+		return true
+	default:
+		return false
+	}
+}
+
+func fileHasSQLStorageImport(f *astutil.File) bool {
+	for _, imp := range f.Imports {
+		if isSQLStorageImport(imp) {
+			return true
+		}
+	}
+	return false
+}
+
+func looksLikeDBReceiver(expr ast.Expr) bool {
+	switch v := expr.(type) {
+	case *ast.Ident:
+		return isDBLikeName(v.Name)
+	case *ast.SelectorExpr:
+		return isDBLikeName(v.Sel.Name)
+	default:
+		return false
+	}
+}
+
+func isDBLikeName(name string) bool {
+	name = strings.ToLower(name)
+	switch name {
+	case "db", "repo", "store", "pool", "conn", "tx", "gorm", "sqlx", "ent", "client", "database":
+		return true
+	default:
+		return strings.HasSuffix(name, "db") || strings.HasSuffix(name, "repo")
+	}
+}
+
 func checkDisabled(mod ModuleView, id string) bool {
 	cfg := mod.Config()
 	if cfg == nil {
 		return false
 	}
 	return !cfg.CheckEnabled(id)
-}
-
-// stub gated checks — implemented in section C/D
-type stubGated struct {
-	Base
-}
-
-func NewRest02() Checker {
-	return &stubGated{Base: Base{meta: Meta{ID: "rest-02", Gates: []string{"gin", "echo", "chi", "net/http"}, Domain: "rest", DefaultSeverity: SeverityFail}}}
-}
-
-func (s *stubGated) Run(ctx context.Context, mod ModuleView) ([]Finding, error) {
-	_ = ctx
-	_ = mod
-	return nil, nil
-}
-
-func NewSql01() Checker {
-	return &stubGated{Base: Base{meta: Meta{ID: "sql-01", Gates: []string{"pgx", "gorm", "sqlx", "sqlc", "ent", "database/sql"}, Domain: "sql", DefaultSeverity: SeverityFail}}}
 }
 
