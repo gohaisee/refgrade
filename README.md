@@ -27,9 +27,9 @@ go test ./...
 
 ## status
 
-mvp slice: `scan`, `detect`, `explain`, checks **cfg-01**, **err-01**, and **err-03**. more checks from [docs/en/checks.md](docs/en/checks.md) — next phases
+**76 checks**: 25 universal + 51 stack-gated (rest, sql, graphql, grpc). catalog: [docs/en/checks.md](docs/en/checks.md)
 
-`scan` exits **1** only on `fail` findings; `warn` (e.g. err-01) prints in the report but exit **0**
+`scan` exits **1** only on `fail` findings; `warn` prints in the report but exit **0**
 
 ## languages
 
