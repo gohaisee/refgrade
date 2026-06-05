@@ -108,6 +108,19 @@ func Registry() []RegistryEntry {
 		entry(Meta{ID: "sqlx-01", Gates: []string{"sqlx"}, Domain: "sql", DefaultSeverity: SeverityWarn}, func() Checker { return NewSqlx01() }),
 		entry(Meta{ID: "sqlc-01", Gates: []string{"sqlc"}, Domain: "sql", DefaultSeverity: SeverityWarn}, func() Checker { return NewSqlc01() }),
 		entry(Meta{ID: "ent-01", Gates: []string{"ent"}, Domain: "sql", DefaultSeverity: SeverityWarn}, func() Checker { return NewEnt01() }),
+		entry(Meta{ID: "mq-01", Gates: mqGates, Domain: "messaging", DefaultSeverity: SeverityFail}, func() Checker { return NewMq01() }),
+		entry(Meta{ID: "mq-02", Gates: mqGates, Domain: "messaging", DefaultSeverity: SeverityWarn}, func() Checker { return NewMq02() }),
+		entry(Meta{ID: "mq-03", Gates: mqGates, Domain: "messaging", DefaultSeverity: SeverityWarn}, func() Checker { return NewMq03() }),
+		entry(Meta{ID: "mq-04", Gates: mqGates, Domain: "messaging", DefaultSeverity: SeverityWarn}, func() Checker { return NewMq04() }),
+		entry(Meta{ID: "mq-05", Gates: mqGates, Domain: "messaging", DefaultSeverity: SeverityWarn}, func() Checker { return NewMq05() }),
+		entry(Meta{ID: "kafka-01", Gates: []string{"kafka-go"}, Domain: "messaging", DefaultSeverity: SeverityFail}, func() Checker { return NewKafka01() }),
+		entry(Meta{ID: "kafka-02", Gates: []string{"kafka-go"}, Domain: "messaging", DefaultSeverity: SeverityFail}, func() Checker { return NewKafka02() }),
+		entry(Meta{ID: "kafka-03", Gates: []string{"kafka-go"}, Domain: "messaging", DefaultSeverity: SeverityInfo}, func() Checker { return NewKafka03() }),
+		entry(Meta{ID: "rmq-01", Gates: []string{"rabbitmq"}, Domain: "messaging", DefaultSeverity: SeverityWarn}, func() Checker { return NewRmq01() }),
+		entry(Meta{ID: "rmq-02", Gates: []string{"rabbitmq"}, Domain: "messaging", DefaultSeverity: SeverityWarn}, func() Checker { return NewRmq02() }),
+		entry(Meta{ID: "rmq-03", Gates: []string{"rabbitmq"}, Domain: "messaging", DefaultSeverity: SeverityWarn}, func() Checker { return NewRmq03() }),
+		entry(Meta{ID: "nats-01", Gates: []string{"nats"}, Domain: "messaging", DefaultSeverity: SeverityWarn}, func() Checker { return NewNats01() }),
+		entry(Meta{ID: "nats-02", Gates: []string{"nats"}, Domain: "messaging", DefaultSeverity: SeverityWarn}, func() Checker { return NewNats02() }),
 	}
 }
 
