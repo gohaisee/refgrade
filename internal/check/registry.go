@@ -108,6 +108,15 @@ func Registry() []RegistryEntry {
 		entry(Meta{ID: "sqlx-01", Gates: []string{"sqlx"}, Domain: "sql", DefaultSeverity: SeverityWarn}, func() Checker { return NewSqlx01() }),
 		entry(Meta{ID: "sqlc-01", Gates: []string{"sqlc"}, Domain: "sql", DefaultSeverity: SeverityWarn}, func() Checker { return NewSqlc01() }),
 		entry(Meta{ID: "ent-01", Gates: []string{"ent"}, Domain: "sql", DefaultSeverity: SeverityWarn}, func() Checker { return NewEnt01() }),
+		entry(Meta{ID: "mongo-01", Gates: mongoGates(), Domain: "mongodb", DefaultSeverity: SeverityFail}, func() Checker { return NewMongo01() }),
+		entry(Meta{ID: "mongo-02", Gates: mongoGates(), Domain: "mongodb", DefaultSeverity: SeverityWarn}, func() Checker { return NewMongo02() }),
+		entry(Meta{ID: "mongo-03", Gates: mongoGates(), Domain: "mongodb", DefaultSeverity: SeverityWarn}, func() Checker { return NewMongo03() }),
+		entry(Meta{ID: "mongo-04", Gates: mongoGates(), Domain: "mongodb", DefaultSeverity: SeverityInfo}, func() Checker { return NewMongo04() }),
+		entry(Meta{ID: "mongo-05", Gates: mongoGates(), Domain: "mongodb", DefaultSeverity: SeverityInfo}, func() Checker { return NewMongo05() }),
+		entry(Meta{ID: "mongo-06", Gates: mongoGates(), Domain: "mongodb", DefaultSeverity: SeverityFail}, func() Checker { return NewMongo06() }),
+		entry(Meta{ID: "mongo-07", Gates: mongoGates(), Domain: "mongodb", DefaultSeverity: SeverityWarn}, func() Checker { return NewMongo07() }),
+		entry(Meta{ID: "mongo-08", Gates: mongoGates(), Domain: "mongodb", DefaultSeverity: SeverityWarn}, func() Checker { return NewMongo08() }),
+
 	}
 }
 

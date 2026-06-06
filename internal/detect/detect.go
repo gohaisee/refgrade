@@ -37,6 +37,7 @@ var importToStack = map[string]string{
 	"entgo.io/ent":                              "ent",
 	"database/sql":                              "database/sql",
 	"go.mongodb.org/mongo-driver/mongo":         "mongo-driver",
+	"go.mongodb.org/mongo-driver/bson":          "mongo-driver",
 	"github.com/redis/go-redis/v9":              "go-redis",
 	"github.com/segmentio/kafka-go":             "kafka-go",
 	"github.com/rabbitmq/amqp091-go":            "rabbitmq",
