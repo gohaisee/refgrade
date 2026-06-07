@@ -116,6 +116,15 @@ func Registry() []RegistryEntry {
 		entry(Meta{ID: "mongo-06", Gates: mongoGates(), Domain: "mongodb", DefaultSeverity: SeverityFail}, func() Checker { return NewMongo06() }),
 		entry(Meta{ID: "mongo-07", Gates: mongoGates(), Domain: "mongodb", DefaultSeverity: SeverityWarn}, func() Checker { return NewMongo07() }),
 		entry(Meta{ID: "mongo-08", Gates: mongoGates(), Domain: "mongodb", DefaultSeverity: SeverityWarn}, func() Checker { return NewMongo08() }),
+		entry(Meta{ID: "redis-01", Gates: redisGates(), Domain: "redis", DefaultSeverity: SeverityFail}, func() Checker { return NewRedis01() }),
+		entry(Meta{ID: "redis-02", Gates: redisGates(), Domain: "redis", DefaultSeverity: SeverityWarn}, func() Checker { return NewRedis02() }),
+		entry(Meta{ID: "redis-03", Gates: redisGates(), Domain: "redis", DefaultSeverity: SeverityFail}, func() Checker { return NewRedis03() }),
+		entry(Meta{ID: "redis-04", Gates: redisGates(), Domain: "redis", DefaultSeverity: SeverityWarn}, func() Checker { return NewRedis04() }),
+		entry(Meta{ID: "redis-05", Gates: redisGates(), Domain: "redis", DefaultSeverity: SeverityFail}, func() Checker { return NewRedis05() }),
+		entry(Meta{ID: "redis-06", Gates: redisGates(), Domain: "redis", DefaultSeverity: SeverityInfo}, func() Checker { return NewRedis06() }),
+		entry(Meta{ID: "redis-07", Gates: redisGates(), Domain: "redis", DefaultSeverity: SeverityInfo}, func() Checker { return NewRedis07() }),
+		entry(Meta{ID: "redis-08", Gates: redisGates(), Domain: "redis", DefaultSeverity: SeverityInfo}, func() Checker { return NewRedis08() }),
+		entry(Meta{ID: "redis-09", Gates: redisGates(), Domain: "redis", DefaultSeverity: SeverityInfo}, func() Checker { return NewRedis09() }),
 
 	}
 }
