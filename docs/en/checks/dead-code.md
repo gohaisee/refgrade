@@ -16,12 +16,12 @@ always run for modules with `cmd/` or testable `internal/` packages
 |----|------|-----|-----|----------|
 | dead-01 | function reported unreachable by `deadcode` | never called; maintenance drag | delete or wire up | warn |
 | dead-02 | exported symbol in `internal/` unreachable even with tests | dead api surface | remove | info |
-| dead-03 | `U1000` unused func/type/const | clutter | delete |
-| dead-04 | `.go` file not in any package build (orphan) | confusion | remove or fix package |
-| dead-05 | empty package (only `package foo`) | mistake | delete package |
-| dead-06 | require in go.mod unused by imports | supply chain noise | tidy |
-| dead-07 | large commented-out code blocks | hides real logic | delete (git history keeps it) |
-| dead-08 | test helper only used in one file but exported | narrow visibility | unexport |
+| dead-03 | `U1000` unused func/type/const | clutter | delete | warn |
+| dead-04 | `.go` file not in any package build (orphan) | confusion | remove or fix package | warn |
+| dead-05 | empty package (only `package foo`) | mistake | delete package | warn |
+| dead-06 | require in go.mod unused by imports | supply chain noise | tidy | warn |
+| dead-07 | large commented-out code blocks | hides real logic | delete (git history keeps it) | warn |
+| dead-08 | test helper only used in one file but exported | narrow visibility | unexport | info |
 
 ## false positives (document in finding, don't auto-fail)
 
@@ -34,8 +34,8 @@ always run for modules with `cmd/` or testable `internal/` packages
 
 | command | behavior |
 |---------|----------|
-| `refgrade scan` | includes dead-01…06 at warn level |
-| `refgrade deadcode` (planned) | deep mode, `--include-tests`, optional `--blame` |
+| `refgrade scan` | dead-01…08 (dead-01/03/04/05/06/07 warn; dead-02/08 info) |
+| `refgrade deadcode` | not a separate command — dead checks run inside `scan` when `deadcode` and `staticcheck` are on PATH |
 
 ## fixtures
 

@@ -114,6 +114,7 @@ func Registry() []RegistryEntry {
 		entry(Meta{ID: "sqlx-01", Gates: []string{"sqlx"}, Domain: "sql", DefaultSeverity: SeverityWarn}, func() Checker { return NewSqlx01() }),
 		entry(Meta{ID: "sqlc-01", Gates: []string{"sqlc"}, Domain: "sql", DefaultSeverity: SeverityWarn}, func() Checker { return NewSqlc01() }),
 		entry(Meta{ID: "ent-01", Gates: []string{"ent"}, Domain: "sql", DefaultSeverity: SeverityWarn}, func() Checker { return NewEnt01() }),
+<<<<<<< HEAD
 		entry(Meta{ID: "mongo-01", Gates: mongoGates(), Domain: "mongodb", DefaultSeverity: SeverityFail}, func() Checker { return NewMongo01() }),
 		entry(Meta{ID: "mongo-02", Gates: mongoGates(), Domain: "mongodb", DefaultSeverity: SeverityWarn}, func() Checker { return NewMongo02() }),
 		entry(Meta{ID: "mongo-03", Gates: mongoGates(), Domain: "mongodb", DefaultSeverity: SeverityWarn}, func() Checker { return NewMongo03() }),
@@ -131,6 +132,8 @@ func Registry() []RegistryEntry {
 		entry(Meta{ID: "redis-07", Gates: redisGates(), Domain: "redis", DefaultSeverity: SeverityInfo}, func() Checker { return NewRedis07() }),
 		entry(Meta{ID: "redis-08", Gates: redisGates(), Domain: "redis", DefaultSeverity: SeverityInfo}, func() Checker { return NewRedis08() }),
 		entry(Meta{ID: "redis-09", Gates: redisGates(), Domain: "redis", DefaultSeverity: SeverityInfo}, func() Checker { return NewRedis09() }),
+=======
+>>>>>>> 1ef216080d612da3786335e2f685ccfb879d61dc
 		entry(Meta{ID: "mq-01", Gates: mqGates, Domain: "messaging", DefaultSeverity: SeverityFail}, func() Checker { return NewMq01() }),
 		entry(Meta{ID: "mq-02", Gates: mqGates, Domain: "messaging", DefaultSeverity: SeverityWarn}, func() Checker { return NewMq02() }),
 		entry(Meta{ID: "mq-03", Gates: mqGates, Domain: "messaging", DefaultSeverity: SeverityWarn}, func() Checker { return NewMq03() }),
@@ -144,6 +147,7 @@ func Registry() []RegistryEntry {
 		entry(Meta{ID: "rmq-03", Gates: []string{"rabbitmq"}, Domain: "messaging", DefaultSeverity: SeverityWarn}, func() Checker { return NewRmq03() }),
 		entry(Meta{ID: "nats-01", Gates: []string{"nats"}, Domain: "messaging", DefaultSeverity: SeverityWarn}, func() Checker { return NewNats01() }),
 		entry(Meta{ID: "nats-02", Gates: []string{"nats"}, Domain: "messaging", DefaultSeverity: SeverityWarn}, func() Checker { return NewNats02() }),
+<<<<<<< HEAD
 		entry(Meta{ID: "sec-01", Domain: "security", DefaultSeverity: SeverityFail}, func() Checker { return NewSec01() }),
 		entry(Meta{ID: "sec-02", Domain: "security", DefaultSeverity: SeverityFail}, func() Checker { return NewSec02() }),
 		entry(Meta{ID: "sec-03", Domain: "security", DefaultSeverity: SeverityFail}, func() Checker { return NewSec03() }),
@@ -166,6 +170,8 @@ func Registry() []RegistryEntry {
 		entry(Meta{ID: "sec-g06", Gates: gqlGates, Domain: "security", DefaultSeverity: SeverityWarn}, func() Checker { return NewSecG06() }),
 		entry(Meta{ID: "sec-db05", Gates: sqlGates(), Domain: "security", DefaultSeverity: SeverityFail}, func() Checker { return NewSecDB05() }),
 
+=======
+>>>>>>> 1ef216080d612da3786335e2f685ccfb879d61dc
 	}
 }
 

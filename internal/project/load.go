@@ -94,6 +94,7 @@ type listPackageJSON struct {
 	Dir         string   `json:"Dir"`
 	GoFiles     []string `json:"GoFiles"`
 	GoTestFiles []string `json:"GoTestFiles"`
+	TestGoFiles []string `json:"TestGoFiles"`
 	Error       *struct {
 		Err string `json:"Err"`
 	} `json:"Error"`
@@ -127,10 +128,17 @@ func listPackages(ctx context.Context, root string) ([]*Package, error) {
 			ImportPath:  raw.ImportPath,
 			Dir:         raw.Dir,
 			GoFiles:     append([]string(nil), raw.GoFiles...),
-			GoTestFiles: append([]string(nil), raw.GoTestFiles...),
+			GoTestFiles: appendTestGoFiles(raw.GoTestFiles, raw.TestGoFiles),
 		})
 	}
 	return pkgs, nil
+}
+
+func appendTestGoFiles(legacy, modern []string) []string {
+	if len(modern) > 0 {
+		return append([]string(nil), modern...)
+	}
+	return append([]string(nil), legacy...)
 }
 
 // path relative to module root, slash separators
