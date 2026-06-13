@@ -71,18 +71,30 @@ func isMongoDataCall(f *astutil.File, call *ast.CallExpr) bool {
 	if !ok {
 		return false
 	}
-	_, name, ok := selectorImport(f, sel)
-	if !ok {
-		name = sel.Sel.Name
-	}
-	_, ok = mongoDataMethods[name]
-	if !ok {
+	name := sel.Sel.Name
+	if _, ok := mongoDataMethods[name]; !ok {
 		return false
 	}
-	if fileImportsMongo(f) {
+	if imp, _, ok := selectorImport(f, sel); ok && isMongoDriverImport(imp) {
 		return true
 	}
-	return looksLikeDBReceiver(sel.X)
+	if !fileImportsMongo(f) {
+		return false
+	}
+	return looksLikeMongoReceiver(sel.X)
+}
+
+func looksLikeMongoReceiver(expr ast.Expr) bool {
+	switch v := expr.(type) {
+	case *ast.Ident:
+		lower := strings.ToLower(v.Name)
+		return lower == "coll" || lower == "collection" || lower == "mongo" ||
+			strings.HasPrefix(lower, "mongo") || strings.Contains(lower, "collection")
+	case *ast.SelectorExpr:
+		return looksLikeMongoReceiver(v.X)
+	default:
+		return false
+	}
 }
 
 func isContextBackgroundExpr(f *astutil.File, expr ast.Expr) bool {
@@ -304,7 +316,7 @@ func (c *Mongo03) Run(ctx context.Context, mod ModuleView) ([]Finding, error) {
 			if !ok || sel.Sel.Name != "Find" {
 				return true
 			}
-			if !fileImportsMongo(f) && !isMongoDataCall(f, call) {
+			if !isMongoDataCall(f, call) {
 				return true
 			}
 			findings = append(findings, finding(c.ID(), sev, f.RelPath, pool.Line(call)))

@@ -52,7 +52,7 @@ func (c *Dead01) Run(ctx context.Context, mod ModuleView) ([]Finding, error) {
 	return findings, nil
 }
 
-// Dead02 — exported unreachable symbol in internal/
+// exported unreachable symbol in internal/
 type Dead02 struct{ Base }
 
 func NewDead02() *Dead02 {
@@ -80,7 +80,7 @@ func (c *Dead02) Run(ctx context.Context, mod ModuleView) ([]Finding, error) {
 	return findings, nil
 }
 
-// Dead03 — staticcheck U1000 unused func/type/const
+// staticcheck U1000 unused func/type/const
 type Dead03 struct{ Base }
 
 func NewDead03() *Dead03 {
@@ -134,7 +134,7 @@ func (c *Dead03) Run(ctx context.Context, mod ModuleView) ([]Finding, error) {
 	return findings, nil
 }
 
-// Dead04 — .go file on disk but not in go list package build
+// .go file on disk but not in go list package build
 type Dead04 struct{ Base }
 
 func NewDead04() *Dead04 {
@@ -164,7 +164,7 @@ func (c *Dead04) Run(ctx context.Context, mod ModuleView) ([]Finding, error) {
 	return findings, nil
 }
 
-// Dead05 — package with only package clause, no declarations
+// package with only package clause, no declarations
 type Dead05 struct{ Base }
 
 func NewDead05() *Dead05 {
@@ -218,7 +218,7 @@ func (c *Dead06) Run(ctx context.Context, mod ModuleView) ([]Finding, error) {
 	return []Finding{finding(c.ID(), effectiveSeverity(mod, c.ID(), SeverityWarn), "go.mod", 1)}, nil
 }
 
-// Dead07 — large commented-out code blocks
+// large commented-out code blocks
 type Dead07 struct{ Base }
 
 func NewDead07() *Dead07 {
@@ -248,7 +248,7 @@ func (c *Dead07) Run(ctx context.Context, mod ModuleView) ([]Finding, error) {
 	return findings, nil
 }
 
-// Dead08 — exported test helper referenced from one file only
+// exported test helper referenced from one file only
 type Dead08 struct{ Base }
 
 func NewDead08() *Dead08 {
