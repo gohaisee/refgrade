@@ -186,18 +186,12 @@ func TestRun_help(t *testing.T) {
 }
 
 func TestRun_langPrecedence_yaml(t *testing.T) {
-	root := filepath.Join("..", "..", "testdata", "fixtures", "good-minimal")
+	src := filepath.Join("..", "..", "testdata", "fixtures", "good-minimal")
 	dir := t.TempDir()
+	if err := copyDir(src, dir); err != nil {
+		t.Fatal(err)
+	}
 	if err := os.WriteFile(filepath.Join(dir, ".refgrade.yaml"), []byte("lang: ru\n"), 0o644); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(filepath.Join(dir, "go.mod"), []byte("module github.com/example/langtest\n\ngo 1.22\n"), 0o644); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.Mkdir(filepath.Join(dir, "cmd"), 0o755); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(filepath.Join(dir, "cmd", "main.go"), []byte("package main\nfunc main() {}\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
 
@@ -217,7 +211,7 @@ func TestRun_langPrecedence_yaml(t *testing.T) {
 	if code != exitOK {
 		t.Fatalf("exit code = %d", code)
 	}
-	if !strings.Contains(buf.String(), "замечаний нет") {
+	if !strings.Contains(buf.String(), "отчёт refgrade") || !strings.Contains(buf.String(), "модуль:") {
 		t.Fatalf("expected ru from yaml, got %q", buf.String())
 	}
 
@@ -234,7 +228,7 @@ func TestRun_langPrecedence_yaml(t *testing.T) {
 	if _, err := buf.ReadFrom(r); err != nil {
 		t.Fatal(err)
 	}
-	if !strings.Contains(buf.String(), "no findings") {
+	if !strings.Contains(buf.String(), "refgrade scan report") || !strings.Contains(buf.String(), "module:") {
 		t.Fatalf("expected en from env, got %q", buf.String())
 	}
 
@@ -251,11 +245,10 @@ func TestRun_langPrecedence_yaml(t *testing.T) {
 	if _, err := buf.ReadFrom(r); err != nil {
 		t.Fatal(err)
 	}
-	if !strings.Contains(buf.String(), "no findings") {
+	if !strings.Contains(buf.String(), "refgrade scan report") || !strings.Contains(buf.String(), "module:") {
 		t.Fatalf("expected en from flag, got %q", buf.String())
 	}
 
-	_ = root
 }
 
 func TestRun_unknownCommand(t *testing.T) {
@@ -271,3 +264,25 @@ func TestRun_noArgs(t *testing.T) {
 		t.Fatalf("exit code = %d", code)
 	}
 }
+
+func copyDir(src, dst string) error {
+	return filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		rel, err := filepath.Rel(src, path)
+		if err != nil {
+			return err
+		}
+		target := filepath.Join(dst, rel)
+		if info.IsDir() {
+			return os.MkdirAll(target, info.Mode().Perm())
+		}
+		data, err := os.ReadFile(path)
+		if err != nil {
+			return err
+		}
+		return os.WriteFile(target, data, info.Mode().Perm())
+	})
+}
+
