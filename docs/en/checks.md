@@ -1,6 +1,6 @@
 # checks catalog
 
-rules by domain — universal + stack phase 2 implemented in `internal/check/`
+rules by domain — universal + stack phase 2–3 implemented in `internal/check/`
 
 | file | when it runs |
 |------|----------------|
