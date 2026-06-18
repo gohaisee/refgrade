@@ -24,6 +24,14 @@
 | gql-08 | файл resolver >500 строк без разбиения | сложный review | разбить по домену или тонкие делегаты | info |
 | gql-09 | get-based graphql queries без лимита размера | отравление кэша / слишком длинные url | только post или лимит query string | info |
 
+## security (overlap каталога — v1.0.0)
+
+| id | статус | реализовано как |
+|----|--------|-----------------|
+| sec-g01 | covered-by | [gql-05](#checks) introspection без env gate |
+| sec-g02 | covered-by | [gql-04](#checks) нет лимита глубины запроса |
+| sec-g03 | covered-by | [gql-04](#checks) нет complexity/cost limit |
+
 ## gqlgen-specific
 
 | id | when | fix |

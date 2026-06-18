@@ -24,9 +24,9 @@
 |----|------|-----|
 | mongo-08 | обработка bson в пакете handler | пакет repository |
 
-## security
+## security (только каталог — deferred в v1.0.0)
 
-| id | when | fix |
-|----|------|-----|
-| sec-m01 | connection uri с паролем в закоммиченном файле | secret manager |
-| sec-m02 | tls отключён для удалённого кластера | включить tls в uri |
+| id | статус | when | fix |
+|----|--------|------|-----|
+| sec-m01 | deferred (overlap [cfg-03](universal.md#config)) | connection uri с паролем в закоммиченном файле | secret manager |
+| sec-m02 | deferred | tls отключён для удалённого кластера | включить tls в uri |

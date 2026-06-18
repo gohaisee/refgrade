@@ -25,9 +25,9 @@
 |----|------|-----|
 | redis-09 | `PoolSize` / `MinIdleConns` zero on prod path | tune pool |
 
-## security
+## security (catalog only — deferred in v1.0.0)
 
-| id | when | fix |
-|----|------|-----|
-| sec-rd01 | password in source | env only |
-| sec-rd02 | redis without tls on public network | tls + acl |
+| id | status | when | fix |
+|----|--------|------|-----|
+| sec-rd01 | deferred (overlap [cfg-03](universal.md#config)) | password in source | env only |
+| sec-rd02 | deferred | redis without tls on public network | tls + acl |

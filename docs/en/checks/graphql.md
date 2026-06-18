@@ -24,6 +24,14 @@
 | gql-08 | resolver file >500 lines without split | hard review | split by domain or thin delegates | info |
 | gql-09 | get-based graphql queries without size limit | cache poisoning / oversized urls | post-only or limit query string | info |
 
+## security (catalog overlap — v1.0.0)
+
+| id | status | implemented as |
+|----|--------|----------------|
+| sec-g01 | covered-by | [gql-05](#checks) introspection without env gate |
+| sec-g02 | covered-by | [gql-04](#checks) no query depth limit |
+| sec-g03 | covered-by | [gql-04](#checks) no complexity/cost limit |
+
 ## gqlgen-specific
 
 | id | when | fix |

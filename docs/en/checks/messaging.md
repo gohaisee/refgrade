@@ -47,9 +47,9 @@
 
 sync rpc (grpc/http) and async queue solve different problems — flag queue used where caller waits for peer data that could be local (info only, not auto-fail)
 
-## security
+## security (catalog only — deferred in v1.0.0)
 
-| id | when | fix |
-|----|------|-----|
-| sec-mq01 | broker url with credentials in repo | secrets via env |
-| sec-mq02 | plaintext amqp/nats to public internet | tls |
+| id | status | when | fix |
+|----|--------|------|-----|
+| sec-mq01 | deferred (overlap [cfg-03](universal.md#config)) | broker url with credentials in repo | secrets via env |
+| sec-mq02 | deferred | plaintext amqp/nats to public internet | tls |
