@@ -158,7 +158,7 @@ func TestFromProject_adapter(t *testing.T) {
 	t.Parallel()
 
 	root := filepath.Join("..", "..", "testdata", "fixtures", "good-minimal")
-	mod, err := project.Load(context.Background(), root)
+	mod, err := project.Load(context.Background(), root, project.LoadOptions{})
 	if err != nil {
 		t.Fatal(err)
 	}

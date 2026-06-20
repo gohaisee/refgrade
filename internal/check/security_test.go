@@ -200,7 +200,9 @@ func TestRegistry_hasSecurityChecks(t *testing.T) {
 	want := []string{
 		"sec-01", "sec-02", "sec-03", "sec-04", "sec-05", "sec-07", "sec-08", "sec-09", "sec-10", "sec-15",
 		"sec-r01", "sec-r03", "sec-r04", "sec-r05", "sec-r06", "sec-r09", "sec-r10",
-		"sec-g04", "sec-g05", "sec-g06", "sec-db05",
+		"sec-g04", "sec-g05", "sec-g06",
+		"sec-g07", "sec-g08", "sec-g09", "sec-g10",
+		"sec-db05",
 	}
 	seen := make(map[string]struct{})
 	for _, id := range AllCheckIDs() {

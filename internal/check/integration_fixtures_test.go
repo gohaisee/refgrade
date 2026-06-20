@@ -38,7 +38,7 @@ func TestIntegration_fixtures(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.fixture+"/"+tc.checkID, func(t *testing.T) {
 			root := fixturePath(t, tc.fixture)
-			mod, err := project.Load(context.Background(), root)
+			mod, err := project.Load(context.Background(), root, project.LoadOptions{})
 			if err != nil {
 				t.Fatalf("Load: %v", err)
 			}

@@ -13,7 +13,7 @@ import (
 func runFixtureMongo(t *testing.T, fixture, checkID string, minCount int) {
 	t.Helper()
 	root := fixturePath(t, fixture)
-	mod, err := project.Load(context.Background(), root)
+	mod, err := project.Load(context.Background(), root, project.LoadOptions{})
 	if err != nil {
 		t.Fatalf("Load: %v", err)
 	}
