@@ -22,3 +22,9 @@ jobs:
         run: go test ./... -race
         env:
           PATH: ${{ github.workspace }}/bin:${{ env.GOPATH }}/bin:${{ env.PATH }}
+      - name: Coverage gate (internal/check)
+        run: |
+          go test ./internal/check/... -coverprofile=coverage.out
+          pct=$(go tool cover -func=coverage.out | awk '/total:/ { sub(/%/,"",$3); print $3 }')
+          echo "internal/check coverage: ${pct}%"
+          awk -v p="$pct" 'BEGIN { if (p+0 < 75) { printf "coverage below 75%%: %s\n", p; exit 1 } }'
