@@ -4,6 +4,18 @@ all notable changes to refgrade are documented here.
 
 format follows [keep a changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### added
+
+- ci coverage gate for `internal/check` (minimum 75%)
+- dogfood scan guide (`docs/en/dogfood.md`, `docs/ru/dogfood.md`)
+- catalog status column on every check id: `implemented`, `overlap → X`, or `runtime gap`
+
+### changed
+
+- report footer i18n: granular keys for IDOR/BOLA, DAST, and K8s IAM runtime gaps (`report.gap.idor`, `report.gap.dast`, `report.gap.k8s`)
+
 ## [1.0.0] - 2026-08-09
 
 first stable release — full stack refactor readiness scanner for go services.

@@ -14,17 +14,24 @@
 
 ## checks
 
-| id | when | why | fix | severity |
-|----|------|-----|-----|----------|
-| rest-01 | функция handler >80 строк без вызовов service | бизнес-логика в транспорте | вынести в service; handler маппит dto | warn |
-| rest-02 | импорт sql/db в пакете handler | нарушение слоёв | перенести в repo | fail |
-| rest-03 | `http.Server` без `ReadHeaderTimeout` / `ReadTimeout` | slowloris; зависшие соединения | задать таймауты на сервере | warn |
-| rest-04 | нет лимита размера тела на upload/post маршрутах | dos большим телом | `MaxBytesReader` или middleware с лимитом | warn |
-| rest-05 | cors разрешает `*` с `AllowCredentials: true` | уязвимость безопасности в браузере | явный список origin | fail |
-| rest-06 | auth читает заголовок `X-User-Id` / `X-Is-Admin` | тривиальный обход | только jwt/session на стороне сервера | fail |
-| rest-07 | текст внутренней ошибки в json-теле ответа | утечка информации | маппить на безопасные коды; детали логировать на сервере | warn |
-| rest-08 | `gin.SetMode(DebugMode)` вне dev-сборки | stack trace клиентам | release mode через env | warn |
-| rest-09 | gorilla/mux в go.mod без заметки о миграции | неподдерживаемый роутер | chi или stdlib 1.22+ routes | info |
+| id | status | when | why | fix | severity |
+|----|--------|------|-----|-----|----------|
+| rest-01 | implemented | функция handler >80 строк без вызовов service | бизнес-логика в транспорте | вынести в service; handler маппит dto | warn |
+| rest-02 | implemented | импорт sql/db в пакете handler | нарушение слоёв | перенести в repo | fail |
+| rest-03 | implemented | `http.Server` без `ReadHeaderTimeout` / `ReadTimeout` | slowloris; зависшие соединения | задать таймауты на сервере | warn |
+| rest-04 | implemented | нет лимита размера тела на upload/post маршрутах | dos большим телом | `MaxBytesReader` или middleware с лимитом | warn |
+| rest-05 | implemented | cors разрешает `*` с `AllowCredentials: true` | уязвимость безопасности в браузере | явный список origin | fail |
+| rest-06 | implemented | auth читает заголовок `X-User-Id` / `X-Is-Admin` | тривиальный обход | только jwt/session на стороне сервера | fail |
+| rest-07 | implemented | текст внутренней ошибки в json-теле ответа | утечка информации | маппить на безопасные коды; детали логировать на сервере | warn |
+| rest-08 | implemented | `gin.SetMode(DebugMode)` вне dev-сборки | stack trace клиентам | release mode через env | warn |
+| rest-09 | implemented | gorilla/mux в go.mod без заметки о миграции | неподдерживаемый роутер | chi или stdlib 1.22+ routes | info |
+| rest-10 | implemented | запуск http-сервера без recover middleware | panic в handler может уронить процесс | recover middleware на внешнем крае | warn |
+
+## overlap checks
+
+| id | status | overlap | примечание |
+|----|--------|---------|------------|
+| sec-14 | overlap → rest-05 | cors wildcard + credentials | security gate |
 
 ## middleware order (recommended)
 
