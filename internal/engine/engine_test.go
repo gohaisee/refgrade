@@ -13,7 +13,7 @@ import (
 
 func TestScan_badGetenv(t *testing.T) {
 	root := filepath.Join("..", "..", "testdata", "fixtures", "bad-getenv")
-	mod, err := project.Load(context.Background(), root, project.LoadOptions{})
+	mod, err := project.Load(context.Background(), root)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -34,7 +34,7 @@ func TestScan_badGetenv(t *testing.T) {
 
 func TestScan_goodMinimal(t *testing.T) {
 	root := filepath.Join("..", "..", "testdata", "fixtures", "good-minimal")
-	mod, err := project.Load(context.Background(), root, project.LoadOptions{})
+	mod, err := project.Load(context.Background(), root)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -55,7 +55,7 @@ func TestScan_goodMinimal(t *testing.T) {
 
 func TestScan_naStatuses(t *testing.T) {
 	root := filepath.Join("..", "..", "testdata", "fixtures", "good-minimal")
-	mod, err := project.Load(context.Background(), root, project.LoadOptions{})
+	mod, err := project.Load(context.Background(), root)
 	if err != nil {
 		t.Fatal(err)
 	}
