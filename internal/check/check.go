@@ -42,6 +42,8 @@ type ModuleView interface {
 	GoModContent() []byte
 	Excluded(relPath string) bool
 	Config() *refgradeconfig.Config
+	BuildTags() []string
+	IncludeTests() bool
 	ASTPool(filter astutil.Filter) (*astutil.Pool, error)
 }
 

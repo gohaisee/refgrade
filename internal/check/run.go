@@ -29,7 +29,10 @@ func (a ModuleAdapter) RelPath(file string) (string, error) {
 func (a ModuleAdapter) GoSourceFiles() []GoFile {
 	var files []GoFile
 	for _, pkg := range a.Mod.Packages {
-		names := append(append([]string(nil), pkg.GoFiles...), pkg.GoTestFiles...)
+		names := append([]string(nil), pkg.GoFiles...)
+		if a.IncludeTests() {
+			names = append(names, pkg.GoTestFiles...)
+		}
 		for _, name := range names {
 			abs := filepath.Join(pkg.Dir, name)
 			rel, err := a.Mod.RelPath(abs)

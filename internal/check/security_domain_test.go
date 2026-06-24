@@ -3,6 +3,8 @@ package check
 import (
 	"context"
 	"testing"
+
+	"github.com/gohaisee/refgrade/internal/refgradeconfig"
 )
 
 func TestSecM01_flagsMongoPasswordURI(t *testing.T) {
@@ -119,7 +121,15 @@ func ByID(db *sql.DB, id string) error {
 	return err
 }
 `)
-	mod := stubModule{root: dir, files: []GoFile{{Path: path, RelPath: "internal/repo/repo.go"}}}
+	mod := stubModule{
+		root:  dir,
+		files: []GoFile{{Path: path, RelPath: "internal/repo/repo.go"}},
+		cfg: &refgradeconfig.Config{
+			Checks: map[string]refgradeconfig.CheckSetting{
+				"sql-02": {Enabled: false},
+			},
+		},
+	}
 	findings, err := NewSecDB01().Run(context.Background(), mod)
 	if err != nil {
 		t.Fatal(err)

@@ -56,7 +56,20 @@ func effectiveSeverity(mod ModuleView, id, defaultSev string) string {
 }
 
 func poolFor(mod ModuleView, filter astutil.Filter) (*astutil.Pool, error) {
+	if filter.SkipIntegrationE2E && shouldSkipIntegrationE2E(mod.BuildTags()) {
+	} else if filter.SkipIntegrationE2E {
+		filter.SkipIntegrationE2E = false
+	}
 	return mod.ASTPool(filter)
+}
+
+func shouldSkipIntegrationE2E(activeTags []string) bool {
+	for _, t := range activeTags {
+		if t == "integration" || t == "e2e" {
+			return false
+		}
+	}
+	return true
 }
 
 func fileImportsPath(f *astutil.File, forbidden ...string) bool {
