@@ -29,7 +29,10 @@ func (a ModuleAdapter) RelPath(file string) (string, error) {
 func (a ModuleAdapter) GoSourceFiles() []GoFile {
 	var files []GoFile
 	for _, pkg := range a.Mod.Packages {
-		names := append(append([]string(nil), pkg.GoFiles...), pkg.GoTestFiles...)
+		names := append([]string(nil), pkg.GoFiles...)
+		if a.IncludeTests() {
+			names = append(names, pkg.GoTestFiles...)
+		}
 		for _, name := range names {
 			abs := filepath.Join(pkg.Dir, name)
 			rel, err := a.Mod.RelPath(abs)
@@ -83,6 +86,20 @@ func (a ModuleAdapter) Config() *refgradeconfig.Config {
 	return a.Cfg
 }
 
+func (a ModuleAdapter) BuildTags() []string {
+	if a.Mod == nil {
+		return nil
+	}
+	return a.Mod.BuildTags
+}
+
+func (a ModuleAdapter) IncludeTests() bool {
+	if a.Mod == nil {
+		return false
+	}
+	return a.Mod.IncludeTests
+}
+
 func (a ModuleAdapter) ASTPool(filter astutil.Filter) (*astutil.Pool, error) {
 	var src []astutil.SourceFile
 	for _, gf := range a.GoSourceFiles() {
@@ -107,6 +124,8 @@ func FromProject(mod *project.Module, cfg *refgradeconfig.Config) ModuleView {
 type ScanOptions struct {
 	Stacks       []string
 	WithSecurity bool
+	BuildTags    []string
+	IncludeTests bool
 }
 
 // runs checkers with gating, config, and status rows
@@ -114,6 +133,11 @@ func RunAll(ctx context.Context, mod *project.Module, cfg *refgradeconfig.Config
 	if cfg == nil {
 		cfg = &refgradeconfig.Config{Checks: make(map[string]refgradeconfig.CheckSetting), Profile: refgradeconfig.ProfileStandard}
 	}
+	mod.IncludeTests = true
+	if len(opts.BuildTags) > 0 {
+		mod.BuildTags = append([]string(nil), opts.BuildTags...)
+	}
+	ctx = withScanContext(ctx, opts)
 	view := FromProject(mod, cfg)
 	stackSet := make(map[string]struct{}, len(opts.Stacks))
 	for _, s := range opts.Stacks {
@@ -157,12 +181,55 @@ func RunAll(ctx context.Context, mod *project.Module, cfg *refgradeconfig.Config
 		all = append(all, findings...)
 	}
 
-	if opts.WithSecurity {
-		secFindings, err := runGovulncheck(ctx, view)
+	return SetMeta(all, translate), statuses, nil
+}
+
+// runs dead-01..08 only
+func RunDeadcode(ctx context.Context, mod *project.Module, cfg *refgradeconfig.Config, opts ScanOptions, translate func(string) string) ([]Finding, []CheckStatus, error) {
+	if cfg == nil {
+		cfg = &refgradeconfig.Config{Checks: make(map[string]refgradeconfig.CheckSetting), Profile: refgradeconfig.ProfileStandard}
+	}
+	mod.IncludeTests = opts.IncludeTests
+	if len(opts.BuildTags) > 0 {
+		mod.BuildTags = append([]string(nil), opts.BuildTags...)
+	}
+	ctx = withScanContext(ctx, opts)
+	view := FromProject(mod, cfg)
+
+	var all []Finding
+	var statuses []CheckStatus
+
+	for _, entry := range Registry() {
+		if entry.Meta.Domain != "dead-code" {
+			continue
+		}
+		meta := entry.Meta
+		if !cfg.CheckEnabled(meta.ID) {
+			continue
+		}
+
+		ch := entry.Factory()
+		findings, err := ch.Run(ctx, view)
 		if err != nil {
 			return nil, nil, err
 		}
-		all = append(all, secFindings...)
+
+		sev := cfg.EffectiveSeverity(meta.ID, meta.DefaultSeverity)
+		for i := range findings {
+			if findings[i].Severity == "" {
+				findings[i].Severity = sev
+			} else {
+				findings[i].Severity = cfg.EffectiveSeverity(meta.ID, findings[i].Severity)
+			}
+		}
+
+		count := len(findings)
+		statusSev := SeverityOK
+		if count > 0 {
+			statusSev = worstSeverity(findings)
+		}
+		statuses = append(statuses, CheckStatus{ID: meta.ID, Severity: statusSev, Count: count})
+		all = append(all, findings...)
 	}
 
 	return SetMeta(all, translate), statuses, nil

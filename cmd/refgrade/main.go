@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/gohaisee/refgrade/internal/check"
@@ -38,6 +39,8 @@ func run(args []string) int {
 	switch args[0] {
 	case "scan":
 		return runScanCLI(args[1:])
+	case "deadcode":
+		return runDeadcodeCLI(args[1:])
 	case "detect":
 		return runDetectCLI(args[1:])
 	case "explain":
@@ -58,6 +61,7 @@ func printUsage(w io.Writer) {
 	fmt.Fprintln(w, "usage: refgrade <command> [flags] [path]")
 	fmt.Fprintln(w, "commands:")
 	fmt.Fprintln(w, "  scan     scan a go module for refactor readiness")
+	fmt.Fprintln(w, "  deadcode deep dead-code checks (dead-01..08)")
 	fmt.Fprintln(w, "  detect   detect stack libraries in a go module")
 	fmt.Fprintln(w, "  explain  print when/why/fix for a check id")
 	fmt.Fprintln(w, "  init     write .refgrade.yaml template")
@@ -72,6 +76,9 @@ func runScanCLI(args []string) int {
 	fs.StringVar(&output, "output", "", "write report to file")
 	fs.StringVar(&output, "o", "", "write report to file")
 	withSecurity := fs.Bool("with-security", false, "run govulncheck when available")
+	moduleFlag := fs.String("module", "", "explicit module root path")
+	allModules := fs.Bool("all-modules", false, "scan all nested go.mod roots under path")
+	tagsFlag := fs.String("tags", "", "comma-separated build tags for go list")
 	rest, err := parseFlags(fs, args)
 	if err != nil {
 		return exitError
@@ -80,12 +87,60 @@ func runScanCLI(args []string) int {
 	if len(rest) > 0 {
 		path = rest[0]
 	}
-	code, err := runScan(context.Background(), path, *lang, *format, output, *withSecurity)
+	code, err := runScan(context.Background(), scanParams{
+		path: path, lang: *lang, format: *format, output: output,
+		withSecurity: *withSecurity, module: *moduleFlag, allModules: *allModules,
+		tags: project.ParseBuildTags(*tagsFlag), includeTests: true,
+	})
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return exitError
 	}
 	return code
+}
+
+func runDeadcodeCLI(args []string) int {
+	fs := flag.NewFlagSet("deadcode", flag.ContinueOnError)
+	fs.SetOutput(os.Stderr)
+	lang := fs.String("lang", "", "report language (en, ru)")
+	format := fs.String("format", "text", "output format (text, markdown, json, sarif)")
+	var output string
+	fs.StringVar(&output, "output", "", "write report to file")
+	fs.StringVar(&output, "o", "", "write report to file")
+	includeTests := fs.Bool("include-tests", false, "include test entrypoints in deadcode tool")
+	tagsFlag := fs.String("tags", "", "comma-separated build tags for go list and subprocess tools")
+	rest, err := parseFlags(fs, args)
+	if err != nil {
+		return exitError
+	}
+	path := "."
+	if len(rest) > 0 {
+		path = rest[0]
+	}
+	code, err := runDeadcode(context.Background(), deadcodeParams{
+		path: path, lang: *lang, format: *format, output: output,
+		tags: project.ParseBuildTags(*tagsFlag), includeTests: *includeTests,
+	})
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		return exitError
+	}
+	return code
+}
+
+type scanParams struct {
+	path, lang, format, output string
+	withSecurity               bool
+	module                     string
+	allModules                 bool
+	tags                       []string
+	includeTests               bool
+}
+
+type deadcodeParams struct {
+	path, lang, format, output string
+	tags                       []string
+	includeTests               bool
 }
 
 func runInitCLI(args []string) int {
@@ -160,10 +215,8 @@ func runExplainCLI(args []string) int {
 	return exitOK
 }
 
-// parseFlags collects flags anywhere in args, then returns positional tail
 func parseFlags(fs *flag.FlagSet, args []string) ([]string, error) {
-	var flagArgs []string
-	var positional []string
+	var flagArgs, positional []string
 	for i := 0; i < len(args); i++ {
 		a := args[i]
 		if a == "-" {
@@ -205,12 +258,67 @@ func needsValue(fs *flag.FlagSet, arg string) bool {
 	return true
 }
 
-func runScan(ctx context.Context, path, flagLang, formatName, output string, withSecurity bool) (int, error) {
-	modRoot, err := project.ModuleRoot(path)
+func resolveModuleRoots(basePath, moduleFlag string, allModules bool) ([]string, error) {
+	abs, err := filepath.Abs(basePath)
+	if err != nil {
+		return nil, err
+	}
+	if moduleFlag != "" {
+		modPath := moduleFlag
+		if !filepath.IsAbs(modPath) {
+			modPath = filepath.Join(abs, modPath)
+		}
+		root, err := project.ModuleRoot(modPath)
+		if err != nil {
+			return nil, err
+		}
+		return []string{root}, nil
+	}
+	if allModules {
+		return project.FindModuleRoots(abs, project.DefaultModuleSearchDepth())
+	}
+	root, err := project.ModuleRoot(abs)
+	if err != nil {
+		return nil, err
+	}
+	return []string{root}, nil
+}
+
+func runScan(ctx context.Context, p scanParams) (int, error) {
+	roots, err := resolveModuleRoots(p.path, p.module, p.allModules)
 	if err != nil {
 		return exitError, err
 	}
-	lang, err := refgradeconfig.ResolveLang(flagLang, modRoot)
+	format, err := report.ParseFormat(p.format)
+	if err != nil {
+		return exitError, err
+	}
+	if len(roots) > 1 && (format == report.FormatJSON || format == report.FormatSARIF) {
+		return runScanMerged(ctx, roots, p, format)
+	}
+	var combined []byte
+	exitCode := exitOK
+	for _, root := range roots {
+		code, out, err := scanOneModule(ctx, root, p.lang, format, p.withSecurity, p.tags, p.includeTests)
+		if err != nil {
+			return exitError, err
+		}
+		if code == exitFail {
+			exitCode = exitFail
+		}
+		if len(roots) > 1 && len(combined) > 0 {
+			combined = append(combined, '\n')
+		}
+		combined = append(combined, out...)
+	}
+	if err := writeOutput(p.output, combined); err != nil {
+		return exitError, err
+	}
+	return exitCode, nil
+}
+
+func runScanMerged(ctx context.Context, roots []string, p scanParams, format report.Format) (int, error) {
+	lang, err := refgradeconfig.ResolveLang(p.lang, roots[0])
 	if err != nil {
 		return exitError, err
 	}
@@ -218,51 +326,128 @@ func runScan(ctx context.Context, path, flagLang, formatName, output string, wit
 	if err != nil {
 		return exitError, err
 	}
-	format, err := report.ParseFormat(formatName)
+	var merged *engine.Result
+	exitCode := exitOK
+	for _, root := range roots {
+		code, res, bundle, err := scanOneModuleResult(ctx, root, p.lang, p.withSecurity, p.tags, p.includeTests)
+		if err != nil {
+			return exitError, err
+		}
+		if bundle != nil {
+			b = bundle
+		}
+		if code == exitFail {
+			exitCode = exitFail
+		}
+		if merged == nil {
+			merged = res
+			continue
+		}
+		merged.Findings = append(merged.Findings, res.Findings...)
+		merged.Statuses = append(merged.Statuses, res.Statuses...)
+	}
+	if merged == nil {
+		return exitOK, nil
+	}
+	out, err := report.Render(merged, format, b)
 	if err != nil {
 		return exitError, err
 	}
+	if err := writeOutput(p.output, out); err != nil {
+		return exitError, err
+	}
+	return exitCode, nil
+}
 
-	cfg, err := refgradeconfig.Load(modRoot)
+func runDeadcode(ctx context.Context, p deadcodeParams) (int, error) {
+	root, err := project.ModuleRoot(p.path)
 	if err != nil {
 		return exitError, err
 	}
-
-	mod, err := project.Load(ctx, path)
+	lang, err := refgradeconfig.ResolveLang(p.lang, root)
 	if err != nil {
 		return exitError, err
 	}
+	b, err := i18n.Load(lang)
+	if err != nil {
+		return exitError, err
+	}
+	format, err := report.ParseFormat(p.format)
+	if err != nil {
+		return exitError, err
+	}
+	cfg, err := refgradeconfig.Load(root)
+	if err != nil {
+		return exitError, err
+	}
+	mod, err := project.Load(ctx, root, project.LoadOptions{BuildTags: p.tags, IncludeTests: p.includeTests})
+	if err != nil {
+		return exitError, err
+	}
+	res, err := engine.ScanDeadcode(ctx, mod, engine.Options{Config: cfg, BuildTags: p.tags, IncludeTests: p.includeTests}, b.T)
+	if err != nil {
+		return exitError, err
+	}
+	out, err := report.Render(res, format, b)
+	if err != nil {
+		return exitError, err
+	}
+	if err := writeOutput(p.output, out); err != nil {
+		return exitError, err
+	}
+	if engine.HasWarnOrFail(res) {
+		return exitFail, nil
+	}
+	return exitOK, nil
+}
 
+func scanOneModule(ctx context.Context, root, flagLang string, format report.Format, withSecurity bool, tags []string, includeTests bool) (int, []byte, error) {
+	code, res, b, err := scanOneModuleResult(ctx, root, flagLang, withSecurity, tags, includeTests)
+	if err != nil {
+		return exitError, nil, err
+	}
+	out, err := report.Render(res, format, b)
+	if err != nil {
+		return exitError, nil, err
+	}
+	return code, out, nil
+}
+
+func scanOneModuleResult(ctx context.Context, root, flagLang string, withSecurity bool, tags []string, includeTests bool) (int, *engine.Result, *i18n.Bundle, error) {
+	lang, err := refgradeconfig.ResolveLang(flagLang, root)
+	if err != nil {
+		return exitError, nil, nil, err
+	}
+	b, err := i18n.Load(lang)
+	if err != nil {
+		return exitError, nil, nil, err
+	}
+	cfg, err := refgradeconfig.Load(root)
+	if err != nil {
+		return exitError, nil, nil, err
+	}
+	mod, err := project.Load(ctx, root, project.LoadOptions{BuildTags: tags, IncludeTests: includeTests})
+	if err != nil {
+		return exitError, nil, nil, err
+	}
 	stacks, err := detect.Detect(ctx, mod)
 	if err != nil {
-		return exitError, err
+		return exitError, nil, nil, err
 	}
 	stackNames := make([]string, len(stacks))
 	for i, s := range stacks {
 		stackNames[i] = s.Name
 	}
-
 	res, err := engine.Scan(ctx, mod, engine.Options{
-		Config:       cfg,
-		Stacks:       stackNames,
-		WithSecurity: withSecurity,
+		Config: cfg, Stacks: stackNames, WithSecurity: withSecurity, BuildTags: tags, IncludeTests: includeTests,
 	}, b.T)
 	if err != nil {
-		return exitError, err
+		return exitError, nil, nil, err
 	}
-
-	out, err := report.Render(res, format, b)
-	if err != nil {
-		return exitError, err
-	}
-	if err := writeOutput(output, out); err != nil {
-		return exitError, err
-	}
-
 	if engine.HasFail(res) {
-		return exitFail, nil
+		return exitFail, res, b, nil
 	}
-	return exitOK, nil
+	return exitOK, res, b, nil
 }
 
 func runDetect(ctx context.Context, path, flagLang string) error {
@@ -278,7 +463,7 @@ func runDetect(ctx context.Context, path, flagLang string) error {
 	if err != nil {
 		return err
 	}
-	mod, err := project.Load(ctx, path)
+	mod, err := project.Load(ctx, path, project.LoadOptions{})
 	if err != nil {
 		return err
 	}

@@ -15,11 +15,13 @@ rules by domain — universal + stack phase 2–3 implemented in `internal/check
 | [checks/security-owasp.md](checks/security-owasp.md) | static security |
 | [checks/dead-code.md](checks/dead-code.md) | modules with `cmd/` or `internal/` |
 
-status: `ok` · `warn` · `fail` · `n/a`
+scan status: `ok` · `warn` · `fail` · `n/a`
 
-each row: **id** · **when** · **why** · **fix** · **severity**
+catalog row status: `implemented` · `overlap → X` · `runtime gap`
 
-## implementation status (v1.0.0)
+each row: **id** · **status** · **when** · **why** · **fix** · **severity**
+
+## implementation status (v2)
 
 | phase | domain | registered checks |
 |-------|--------|-------------------|
@@ -28,6 +30,10 @@ each row: **id** · **when** · **why** · **fix** · **severity**
 | 3 | dead code, mongo, redis, messaging, security static | 59 |
 | | **total** | **133** |
 
-overlap and deferred security ids: [checks/security-owasp.md](checks/security-owasp.md#overlap-and-deferred-ids-v100) (`sec-13`/`sec-14`, `sec-g01`…`sec-g03`, `sec-db01`…`sec-db03`, `sec-m*`, `sec-rd*`, `sec-mq*`, `sec-16` subprocess)
+overlap security ids: [checks/security-owasp.md](checks/security-owasp.md#overlap-checks)
+
+runtime gaps (footer): [checks/security-owasp.md](checks/security-owasp.md#honest-gaps-printed-in-report-footer)
+
+dogfood guide: [dogfood.md](dogfood.md)
 
 [research-sources.md](research-sources.md)

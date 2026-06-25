@@ -1,6 +1,6 @@
 # security (OWASP API 2023 + static)
 
-static heuristics only — runtime pentest and idor reproduction are **out of scope** for v1 (report as gap)
+static heuristics only — live IDOR/BOLA reproduction, DAST, and K8s IAM are **runtime gaps** (printed in report footer)
 
 ## owasp api top 10 mapping
 
@@ -10,7 +10,7 @@ static heuristics only — runtime pentest and idor reproduction are **out of sc
 | API2 broken authentication | sec-04, sec-05 | jwt alg, empty secret |
 | API3 broken object property auth | sec-r03 | bind whole struct from json |
 | API4 unrestricted resource consumption | sec-r04, sec-g02, sec-g03 | rate limit, body limit, gql depth |
-| API5 broken function level auth | sec-r05, sec-g07 | admin routes without role |
+| API5 broken function level auth | sec-r05 | admin routes without role |
 | API6 unrestricted sensitive flows | sec-r06 | otp/payment without step-up (heuristic) |
 | API7 ssrf | sec-09 | http get to user url |
 | API8 security misconfiguration | sec-08, sec-14, sec-15 | debug, cors, pprof |
@@ -19,76 +19,81 @@ static heuristics only — runtime pentest and idor reproduction are **out of sc
 
 ## static checks (all modules)
 
-| id | when | fix | severity |
-|----|------|-----|----------|
-| sec-01 | `crypto/md5` / `sha1` for passwords | bcrypt/argon2/scrypt | fail |
-| sec-02 | `tls.Config{InsecureSkipVerify: true}` | proper ca | fail |
-| sec-03 | `math/rand` for tokens/session ids | `crypto/rand` | fail |
-| sec-04 | jwt parse without algorithm pin | validate method in callback | fail |
-| sec-05 | `jwt.SigningMethodNone` | reject | fail |
-| sec-07 | `os/exec` with user-controlled args | allowlist commands | fail |
-| sec-08 | `template.HTML(userInput)` | auto-escape; sanitize | fail |
-| sec-09 | http client to url from user input | ssrf guard; block private ranges | warn |
-| sec-10 | `.env` tracked in git | gitignore; rotate secrets | fail |
-| sec-15 | `net/http/pprof` import without build tag | dev-only | warn |
+| id | status | when | fix | severity |
+|----|--------|------|-----|----------|
+| sec-01 | implemented | `crypto/md5` / `sha1` for passwords | bcrypt/argon2/scrypt | fail |
+| sec-02 | implemented | `tls.Config{InsecureSkipVerify: true}` | proper ca | fail |
+| sec-03 | implemented | `math/rand` for tokens/session ids | `crypto/rand` | fail |
+| sec-04 | implemented | jwt parse without algorithm pin | validate method in callback | fail |
+| sec-05 | implemented | `jwt.SigningMethodNone` | reject | fail |
+| sec-07 | implemented | `os/exec` with user-controlled args | allowlist commands | fail |
+| sec-08 | implemented | `template.HTML(userInput)` | auto-escape; sanitize | fail |
+| sec-09 | implemented | http client to url from user input | ssrf guard; block private ranges | warn |
+| sec-10 | implemented | `.env` tracked in git | gitignore; rotate secrets | fail |
+| sec-15 | implemented | `net/http/pprof` import without build tag | dev-only | warn |
+| sec-16 | implemented | govulncheck not run (default) or CVE found (`--with-security`) | run `--with-security`; upgrade deps | warn / fail |
 
-## overlap and deferred ids (v1.0.0)
+## overlap checks
 
-catalog rows below are **not** separate registry checks — use the implementing id or treat as deferred.
+| id | status | overlap | notes |
+|----|--------|---------|-------|
+| sec-13 | overlap → obs-02 | sensitive fields in log arguments | rest gate: n/a |
+| sec-14 | overlap → rest-05 | cors wildcard + credentials | rest gate |
+| sec-g01 | overlap → gql-05 | introspection without env gate | graphql gate |
+| sec-g02 | overlap → gql-04 | no query depth limit | graphql gate |
+| sec-g03 | overlap → gql-04 | no complexity/cost limit | graphql gate |
+| sec-db01 | overlap → sql-02 | string-built sql | sql gate |
+| sec-db02 | overlap → cfg-03 | hardcoded secrets in source | universal |
+| sec-db03 | overlap → pgx-03 | `sslmode=disable` on remote | pgx gate |
 
-| id | status | implemented as | notes |
-|----|--------|----------------|-------|
-| sec-13 | covered-by | [obs-02](universal.md#observability) | sensitive fields in log arguments |
-| sec-14 | covered-by | [rest-05](rest-gin-echo-chi.md) | cors wildcard + credentials (rest gate) |
-| sec-g01 | covered-by | [gql-05](graphql.md) | introspection without env gate |
-| sec-g02 | covered-by | [gql-04](graphql.md) | no query depth limit |
-| sec-g03 | covered-by | [gql-04](graphql.md) | no complexity/cost limit |
-| sec-db01 | covered-by | [sql-02](sql.md) | string-built sql |
-| sec-db02 | covered-by | [cfg-03](universal.md#config) | hardcoded secrets in source |
-| sec-db03 | covered-by | [pgx-03](sql.md) | `sslmode=disable` on remote |
-| sec-16 | subprocess | `govulncheck` via `--with-security` | not a registry row; optional tool |
-| sec-m01 | deferred | [cfg-03](universal.md#config) overlap | mongo uri password in repo |
-| sec-m02 | deferred | — | remote mongo tls — manual review |
-| sec-rd01 | deferred | [cfg-03](universal.md#config) overlap | redis password in source |
-| sec-rd02 | deferred | — | redis tls on public network |
-| sec-mq01 | deferred | [cfg-03](universal.md#config) overlap | broker url credentials in repo |
-| sec-mq02 | deferred | — | plaintext amqp/nats to public internet |
+## domain security (gated)
+
+| id | status | gate | when | fix | severity |
+|----|--------|------|------|-----|----------|
+| sec-m01 | implemented | mongo | mongo uri password in source | secret manager | fail |
+| sec-m02 | implemented | mongo | remote mongo without tls | mongodb+srv or tls=true | fail |
+| sec-rd01 | implemented | redis | redis password in source | env only | fail |
+| sec-rd02 | implemented | redis | redis url to remote without tls | rediss:// or tls options | fail |
+| sec-mq01 | implemented | mq | broker url credentials in source | env / vault | fail |
+| sec-mq02 | implemented | mq | plaintext amqp/nats to remote | amqps or tls dial | fail |
 
 ## rest-specific
 
-| id | when | fix |
-|----|------|-----|
-| sec-r01 | handler uses path `id` without authz check | verify actor owns resource |
-| sec-r03 | `json.Unmarshal` into db model from request | dto + explicit fields |
-| sec-r04 | login route without rate limiter | middleware limit |
-| sec-r05 | `/admin` without role middleware | rbac check |
-| sec-r10 | webhook handler without hmac verify | signature + replay id |
+| id | status | when | fix |
+|----|--------|------|-----|
+| sec-r01 | implemented | handler uses path `id` without authz check | verify actor owns resource |
+| sec-r03 | implemented | `json.Unmarshal` into db model from request | dto + explicit fields |
+| sec-r04 | implemented | login route without rate limiter | middleware limit |
+| sec-r05 | implemented | `/admin` without role middleware | rbac check |
+| sec-r06 | implemented | payment or otp flow without step-up auth | mfa or step-up before payout |
+| sec-r09 | implemented | `http.Handle` registered outside cmd setup | central router only |
+| sec-r10 | implemented | webhook handler without hmac verify | signature + replay id |
 
-## graphql-specific (implemented)
+## graphql-specific
 
-| id | when | fix |
-|----|------|-----|
-| sec-g04 | `node(id:)` without ownership | authz in resolver |
-| sec-g05 | unlimited alias batching | cost limit / persisted queries |
-| sec-g06 | cookie auth + get queries | csrf token or post-only |
+| id | status | when | fix |
+|----|--------|------|-----|
+| sec-g04 | implemented | `node(id:)` without ownership | authz in resolver |
+| sec-g05 | implemented | unlimited alias batching | cost limit / persisted queries |
+| sec-g06 | implemented | cookie session auth with get graphql query | csrf token or post-only |
 
-`sec-g01`…`sec-g03` — covered-by [gql-04](graphql.md) / [gql-05](graphql.md); see [overlap table](#overlap-and-deferred-ids-v100)
+## database
 
-## database (implemented)
-
-| id | when | fix |
-|----|------|-----|
-| sec-db05 | dynamic table/column from user | allowlist |
-
-`sec-db01`…`sec-db03` — covered-by [sql-02](sql.md), [cfg-03](universal.md#config), [pgx-03](sql.md); see [overlap table](#overlap-and-deferred-ids-v100)
+| id | status | when | fix |
+|----|--------|------|-----|
+| sec-db05 | implemented | dynamic table/column from user | allowlist |
 
 ## optional subprocess
 
-`refgrade scan --with-security` runs `govulncheck` when installed; does not replace manual review
+`refgrade scan --with-security` runs `govulncheck` for **sec-16** when installed; without the flag **sec-16** warns that dependency CVE scan was skipped
 
 ## honest gaps (printed in report footer)
 
-- live idor / bola reproduction
-- dast / fuzzing
-- infrastructure iam, k8s rbac
-- explain analyze for sql perf
+| topic | status |
+|-------|--------|
+| live IDOR / BOLA reproduction | runtime gap |
+| DAST / fuzzing | runtime gap |
+| infrastructure IAM / K8s RBAC | runtime gap |
+| explain analyze for SQL perf | runtime gap |
+
+i18n keys: `report.gap.idor`, `report.gap.dast`, `report.gap.k8s` in `locales/*.yaml`

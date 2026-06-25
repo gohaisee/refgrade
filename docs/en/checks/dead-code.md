@@ -35,7 +35,16 @@ always run for modules with `cmd/` or testable `internal/` packages
 | command | behavior |
 |---------|----------|
 | `refgrade scan` | dead-01…08 (dead-01/03/04/05/06/07 warn; dead-02/08 info) |
-| `refgrade deadcode` | not a separate command — dead checks run inside `scan` when `deadcode` and `staticcheck` are on PATH |
+| `refgrade deadcode` | dead-01…08 only; `--include-tests` passes `-test` to `deadcode`; `--tags` for go list and subprocess tools |
+
+## scan scope
+
+| flag | behavior |
+|------|----------|
+| `[path]` | walk up to nearest `go.mod` from path (default `.`) |
+| `--module path` | explicit module root (relative to path or absolute) |
+| `--all-modules` | scan every nested `go.mod` under path (depth limit 8) |
+| `--tags integration,e2e` | build tags for `go list` and subprocess; integration/e2e files included in ast checks |
 
 ## fixtures
 

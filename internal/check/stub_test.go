@@ -12,6 +12,7 @@ import (
 type stubModule struct {
 	root  string
 	files []GoFile
+	cfg   *refgradeconfig.Config
 }
 
 func (s stubModule) Root() string { return s.root }
@@ -33,8 +34,15 @@ func (s stubModule) GoModContent() []byte { return nil }
 func (s stubModule) Excluded(string) bool { return false }
 
 func (s stubModule) Config() *refgradeconfig.Config {
+	if s.cfg != nil {
+		return s.cfg
+	}
 	return &refgradeconfig.Config{Checks: make(map[string]refgradeconfig.CheckSetting)}
 }
+
+func (s stubModule) BuildTags() []string { return nil }
+
+func (s stubModule) IncludeTests() bool { return false }
 
 func (s stubModule) ASTPool(filter astutil.Filter) (*astutil.Pool, error) {
 	var src []astutil.SourceFile

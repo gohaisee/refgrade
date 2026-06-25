@@ -91,7 +91,7 @@ func (c *Dead03) Run(ctx context.Context, mod ModuleView) ([]Finding, error) {
 	if checkDisabled(mod, c.ID()) {
 		return nil, nil
 	}
-	res, err := subprocess.RunInDir(ctx, mod.Root(), "staticcheck", []string{"-f", "json", "-checks", "U1000", "./..."}, staticcheckTimeout)
+	res, err := subprocess.RunInDir(ctx, mod.Root(), "staticcheck", staticcheckArgs(mod), staticcheckTimeout)
 	if err != nil {
 		if errors.Is(err, subprocess.ErrNotFound) || strings.Contains(err.Error(), "not found") {
 			return nil, nil
@@ -283,7 +283,7 @@ func (c *Dead08) Run(ctx context.Context, mod ModuleView) ([]Finding, error) {
 }
 
 func runDeadcode(ctx context.Context, mod ModuleView) ([]deadcodeHit, error) {
-	res, err := subprocess.RunInDir(ctx, mod.Root(), "deadcode", []string{"-test", "./..."}, deadcodeTimeout)
+	res, err := subprocess.RunInDir(ctx, mod.Root(), "deadcode", deadcodeArgs(mod), deadcodeTimeout)
 	if err != nil {
 		if errors.Is(err, subprocess.ErrNotFound) || strings.Contains(err.Error(), "not found") {
 			return nil, nil
@@ -313,6 +313,27 @@ func runDeadcode(ctx context.Context, mod ModuleView) ([]deadcodeHit, error) {
 		hits = append(hits, deadcodeHit{file: rel, line: lineNum, name: name})
 	}
 	return hits, nil
+}
+
+func deadcodeArgs(mod ModuleView) []string {
+	var args []string
+	if len(mod.BuildTags()) > 0 {
+		args = append(args, "-tags", strings.Join(mod.BuildTags(), ","))
+	}
+	if mod.IncludeTests() {
+		args = append(args, "-test")
+	}
+	args = append(args, "./...")
+	return args
+}
+
+func staticcheckArgs(mod ModuleView) []string {
+	args := []string{"-f", "json", "-checks", "U1000"}
+	if len(mod.BuildTags()) > 0 {
+		args = append(args, "-tags", strings.Join(mod.BuildTags(), ","))
+	}
+	args = append(args, "./...")
+	return args
 }
 
 func parseDeadcodeLine(line string) (string, int, string) {

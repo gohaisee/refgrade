@@ -13,7 +13,7 @@ import (
 func runFixtureSecurity(t *testing.T, fixture, checkID string, minCount int) {
 	t.Helper()
 	root := fixturePath(t, fixture)
-	mod, err := project.Load(context.Background(), root)
+	mod, err := project.Load(context.Background(), root, project.LoadOptions{})
 	if err != nil {
 		t.Fatalf("Load: %v", err)
 	}
@@ -33,7 +33,7 @@ func runFixtureSecurity(t *testing.T, fixture, checkID string, minCount int) {
 func runFixtureSecurityREST(t *testing.T, fixture, checkID string, minCount int) {
 	t.Helper()
 	root := fixturePath(t, fixture)
-	mod, err := project.Load(context.Background(), root)
+	mod, err := project.Load(context.Background(), root, project.LoadOptions{})
 	if err != nil {
 		t.Fatalf("Load: %v", err)
 	}
@@ -99,4 +99,32 @@ func TestIntegration_badWebhookNoHMAC_secR10(t *testing.T) {
 
 func TestIntegration_badDynamicTable_secDB05(t *testing.T) {
 	runFixtureSQL(t, "bad-dynamic-table", "sec-db05", 1)
+}
+
+func TestIntegration_badMongoURIPassword_secM01(t *testing.T) {
+	runFixtureMongo(t, "bad-mongo-uri-password", "sec-m01", 1)
+}
+
+func TestIntegration_badMongoNoTLSRemote_secM02(t *testing.T) {
+	runFixtureMongo(t, "bad-mongo-no-tls-remote", "sec-m02", 1)
+}
+
+func TestIntegration_badRedisURIPassword_secRD01(t *testing.T) {
+	runFixtureRedis(t, "bad-redis-uri-password", "sec-rd01", 1)
+}
+
+func TestIntegration_badRedisNoTLSRemote_secRD02(t *testing.T) {
+	runFixtureRedis(t, "bad-redis-no-tls-remote", "sec-rd02", 1)
+}
+
+func TestIntegration_badMQCredentials_secMQ01(t *testing.T) {
+	runFixtureMQ(t, "bad-mq-credentials", "sec-mq01", 1)
+}
+
+func TestIntegration_badMQPlaintextRemote_secMQ02(t *testing.T) {
+	runFixtureMQ(t, "bad-mq-plaintext-remote", "sec-mq02", 1)
+}
+
+func TestIntegration_sec16_warnWithoutWithSecurity(t *testing.T) {
+	runFixtureSecurity(t, "good-minimal", "sec-16", 1)
 }

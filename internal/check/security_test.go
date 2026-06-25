@@ -198,9 +198,13 @@ func ByTable(db *sql.DB, tableName string) error {
 func TestRegistry_hasSecurityChecks(t *testing.T) {
 	t.Parallel()
 	want := []string{
-		"sec-01", "sec-02", "sec-03", "sec-04", "sec-05", "sec-07", "sec-08", "sec-09", "sec-10", "sec-15",
+		"sec-01", "sec-02", "sec-03", "sec-04", "sec-05", "sec-07", "sec-08", "sec-09", "sec-10",
+		"sec-13", "sec-14", "sec-15", "sec-16",
 		"sec-r01", "sec-r03", "sec-r04", "sec-r05", "sec-r06", "sec-r09", "sec-r10",
-		"sec-g04", "sec-g05", "sec-g06", "sec-db05",
+		"sec-g01", "sec-g02", "sec-g03", "sec-g04", "sec-g05", "sec-g06",
+		"sec-g07", "sec-g08", "sec-g09", "sec-g10",
+		"sec-db01", "sec-db02", "sec-db03", "sec-db05",
+		"sec-m01", "sec-m02", "sec-rd01", "sec-rd02", "sec-mq01", "sec-mq02",
 	}
 	seen := make(map[string]struct{})
 	for _, id := range AllCheckIDs() {
