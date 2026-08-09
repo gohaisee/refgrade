@@ -25,7 +25,7 @@ func TestLoad_goodMinimal(t *testing.T) {
 	t.Parallel()
 
 	root := filepath.Join("..", "..", "testdata", "fixtures", "good-minimal")
-	mod, err := Load(context.Background(), root, LoadOptions{})
+	mod, err := Load(context.Background(), root)
 	if err != nil {
 		t.Fatalf("Load: %v", err)
 	}
@@ -73,7 +73,7 @@ func TestLoad_badGetenv(t *testing.T) {
 	t.Parallel()
 
 	root := filepath.Join("..", "..", "testdata", "fixtures", "bad-getenv")
-	mod, err := Load(context.Background(), root, LoadOptions{})
+	mod, err := Load(context.Background(), root)
 	if err != nil {
 		t.Fatalf("Load: %v", err)
 	}
@@ -91,7 +91,7 @@ func TestListPackages_goListFailure(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(dir, "go.mod"), []byte(content), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	_, err := listPackages(context.Background(), dir, nil)
+	_, err := listPackages(context.Background(), dir)
 	if err == nil {
 		t.Fatal("expected go list error for invalid go.mod")
 	}

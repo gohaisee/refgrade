@@ -43,6 +43,71 @@ func ModuleRoot(path string) (string, error) {
 	return root, err
 }
 
+const defaultModuleSearchDepth = 8
+
+func DefaultModuleSearchDepth() int { return defaultModuleSearchDepth }
+
+func ParseBuildTags(s string) []string {
+	if strings.TrimSpace(s) == "" {
+		return nil
+	}
+	var out []string
+	for _, part := range strings.Split(s, ",") {
+		t := strings.TrimSpace(part)
+		if t != "" {
+			out = append(out, t)
+		}
+	}
+	return out
+}
+
+func FindModuleRoots(start string, maxDepth int) ([]string, error) {
+	if maxDepth <= 0 {
+		maxDepth = defaultModuleSearchDepth
+	}
+	abs, err := filepath.Abs(start)
+	if err != nil {
+		return nil, fmt.Errorf("resolve path: %w", err)
+	}
+	var roots []string
+	if err := walkModuleRoots(abs, 0, maxDepth, &roots); err != nil {
+		return nil, err
+	}
+	if len(roots) == 0 {
+		return nil, fmt.Errorf("no go.mod found under %s", start)
+	}
+	return roots, nil
+}
+
+func walkModuleRoots(dir string, depth, maxDepth int, roots *[]string) error {
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return err
+	}
+	for _, e := range entries {
+		if e.Name() == "go.mod" {
+			*roots = append(*roots, dir)
+			break
+		}
+	}
+	if depth >= maxDepth {
+		return nil
+	}
+	for _, e := range entries {
+		if !e.IsDir() {
+			continue
+		}
+		name := e.Name()
+		if name == "vendor" || strings.HasPrefix(name, ".") {
+			continue
+		}
+		if err := walkModuleRoots(filepath.Join(dir, name), depth+1, maxDepth, roots); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // resolves module root at path and lists packages via go list
 func Load(ctx context.Context, path string, opts LoadOptions) (*Module, error) {
 	abs, err := filepath.Abs(path)
@@ -111,10 +176,11 @@ type listPackageJSON struct {
 }
 
 func listPackages(ctx context.Context, root string, buildTags []string) ([]*Package, error) {
-	args := []string{"list", "-json", "./..."}
+	args := []string{"list", "-json"}
 	if len(buildTags) > 0 {
 		args = append(args, "-tags", strings.Join(buildTags, ","))
 	}
+	args = append(args, "./...")
 	cmd := exec.CommandContext(ctx, "go", args...)
 	cmd.Dir = root
 	out, err := cmd.Output()

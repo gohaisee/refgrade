@@ -12,16 +12,16 @@ always run for modules with `cmd/` or testable `internal/` packages
 
 ## checks
 
-| id | status | when | why | fix | severity |
-|----|--------|------|-----|-----|----------|
-| dead-01 | implemented | function reported unreachable by `deadcode` | never called; maintenance drag | delete or wire up | warn |
-| dead-02 | implemented | exported symbol in `internal/` unreachable even with tests | dead api surface | remove | info |
-| dead-03 | implemented | `U1000` unused func/type/const | clutter | delete | warn |
-| dead-04 | implemented | `.go` file not in any package build (orphan) | confusion | remove or fix package | warn |
-| dead-05 | implemented | empty package (only `package foo`) | mistake | delete package | warn |
-| dead-06 | implemented | require in go.mod unused by imports | supply chain noise | tidy | warn |
-| dead-07 | implemented | large commented-out code blocks | hides real logic | delete (git history keeps it) | warn |
-| dead-08 | implemented | test helper only used in one file but exported | narrow visibility | unexport | info |
+| id | when | why | fix | severity |
+|----|------|-----|-----|----------|
+| dead-01 | function reported unreachable by `deadcode` | never called; maintenance drag | delete or wire up | warn |
+| dead-02 | exported symbol in `internal/` unreachable even with tests | dead api surface | remove | info |
+| dead-03 | `U1000` unused func/type/const | clutter | delete | warn |
+| dead-04 | `.go` file not in any package build (orphan) | confusion | remove or fix package | warn |
+| dead-05 | empty package (only `package foo`) | mistake | delete package | warn |
+| dead-06 | require in go.mod unused by imports | supply chain noise | tidy | warn |
+| dead-07 | large commented-out code blocks | hides real logic | delete (git history keeps it) | warn |
+| dead-08 | test helper only used in one file but exported | narrow visibility | unexport | info |
 
 ## false positives (document in finding, don't auto-fail)
 

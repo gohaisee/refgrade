@@ -14,7 +14,7 @@ func TestDetect_goodMinimal_empty(t *testing.T) {
 	t.Parallel()
 
 	root := filepath.Join("..", "..", "testdata", "fixtures", "good-minimal")
-	mod, err := project.Load(context.Background(), root, project.LoadOptions{})
+	mod, err := project.Load(context.Background(), root)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -49,7 +49,7 @@ func Router() *gin.Engine {
 		t.Fatal(err)
 	}
 
-	mod, err := project.Load(context.Background(), dir, project.LoadOptions{})
+	mod, err := project.Load(context.Background(), dir)
 	if err != nil {
 		t.Fatal(err)
 	}
