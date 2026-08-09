@@ -298,6 +298,31 @@ func main() {
 	}
 }
 
+func TestRest08_flagsWhenNotDevBuildTag(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	rel := "cmd/app/main.go"
+	path := writeGoFile(t, dir, rel, `//go:build !dev
+
+package main
+
+import "github.com/gin-gonic/gin"
+
+func main() {
+	gin.SetMode(gin.DebugMode)
+}
+`)
+	mod := stubModule{root: dir, files: []GoFile{{Path: path, RelPath: rel}}}
+	findings, err := NewRest08().Run(context.Background(), mod)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(findings) != 1 || findings[0].ID != "rest-08" {
+		t.Fatalf("findings = %+v", findings)
+	}
+}
+
 func TestRest09_flagsGorillaMux(t *testing.T) {
 	t.Parallel()
 

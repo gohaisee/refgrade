@@ -186,12 +186,11 @@ func (c *Rest04) Run(ctx context.Context, mod ModuleView) ([]Finding, error) {
 		return true
 	})
 	if len(findings) == 0 {
-		pool.Inspect(func(f *astutil.File, n ast.Node) bool {
+		for _, f := range pool.Files {
 			if fileHasPostRoute(f) {
 				findings = append(findings, finding(c.ID(), effectiveSeverity(mod, c.ID(), SeverityWarn), f.RelPath, 1))
 			}
-			return true
-		})
+		}
 	}
 	return findings, nil
 }
@@ -607,8 +606,12 @@ func hasDevBuildTag(src string) bool {
 
 func buildTagHasDev(expr string) bool {
 	for _, part := range strings.FieldsFunc(expr, func(r rune) bool {
-		return r == ' ' || r == '\t' || r == '|' || r == '&' || r == '!' || r == '(' || r == ')'
+		return r == ' ' || r == '\t' || r == '|' || r == '&' || r == '(' || r == ')'
 	}) {
+		part = strings.TrimSpace(part)
+		if part == "" || strings.HasPrefix(part, "!") {
+			continue
+		}
 		if part == "dev" || part == "development" {
 			return true
 		}
