@@ -12,44 +12,46 @@
 
 ## universal (all brokers)
 
-| id | when | why | fix | severity |
-|----|------|-----|-----|----------|
-| mq-01 | consumer ack до успешной обработки | потеря сообщений при падении | ack после успеха | fail |
-| mq-02 | нет идемпотентности в consumer handler | дубликаты ломают состояние | идемпотентный handler + dedup key | warn |
-| mq-03 | нет reconnect/backoff config | зависание при сетевом сбое | опции reconnect библиотеки | warn |
-| mq-04 | неограниченная горутина на сообщение | скачок памяти | пул воркеров с лимитом | warn |
-| mq-05 | publish без deadline в context | зависание при недоступном broker | ctx с таймаутом | warn |
+| id | status | when | why | fix | severity |
+|----|--------|------|-----|-----|----------|
+| mq-01 | implemented | consumer ack до успешной обработки | потеря сообщений при падении | ack после успеха | fail |
+| mq-02 | implemented | нет идемпотентности в consumer handler | дубликаты ломают состояние | идемпотентный handler + dedup key | warn |
+| mq-03 | implemented | нет reconnect/backoff config | зависание при сетевом сбое | опции reconnect библиотеки | warn |
+| mq-04 | implemented | неограниченная горутина на сообщение | скачок памяти | пул воркеров с лимитом | warn |
+| mq-05 | implemented | publish без deadline в context | зависание при недоступном broker | ctx с таймаутом | warn |
 
 ## kafka (segmentio/kafka-go)
 
-| id | when | fix |
-|----|------|-----|
-| kafka-01 | consumer без group id | задать `GroupID` |
-| kafka-02 | commit до обработки (пересечение с mq-01) | commit после |
-| kafka-03 | нет partition key когда нужен порядок | ключ по id entity |
+| id | status | when | fix |
+|----|--------|------|-----|
+| kafka-01 | implemented | consumer без group id | задать `GroupID` |
+| kafka-02 | overlap → mq-01 | kafka commit до успешной обработки | commit после успешной обработки |
+| kafka-03 | implemented | нет partition key когда нужен порядок | ключ по id entity |
 
 ## rabbitmq (amqp091-go)
 
-| id | when | fix |
-|----|------|-----|
-| rmq-01 | общий channel между горутинами | channel на consumer или mutex |
-| rmq-02 | нет dead-letter exchange на критичных очередях | настроить dlx |
-| rmq-03 | обрыв соединения без цикла recreate | обёртка reconnect |
+| id | status | when | fix |
+|----|--------|------|-----|
+| rmq-01 | implemented | общий channel между горутинами | channel на consumer или mutex |
+| rmq-02 | implemented | нет dead-letter exchange на критичных очередях | настроить dlx |
+| rmq-03 | implemented | обрыв соединения без цикла recreate | обёртка reconnect |
 
 ## nats
 
-| id | when | fix |
-|----|------|-----|
-| nats-01 | core nats для работы, которую нельзя терять | jetstream с ack |
-| nats-02 | jetstream consumer без ack/nak handling | явная политика ack |
+| id | status | when | fix |
+|----|--------|------|-----|
+| nats-01 | implemented | core nats для работы, которую нельзя терять | jetstream с ack |
+| nats-02 | implemented | jetstream consumer без ack/nak handling | явная политика ack |
 
 ## design note
 
 синхронный rpc (grpc/http) и async queue решают разные задачи — флаг, если очередь используется там, где вызывающий ждёт данные peer, которые могли бы быть локальными (только info, не auto-fail)
 
-## security (только каталог — deferred в v1.0.0)
+## security
 
-| id | статус | when | fix |
-|----|--------|------|-----|
-| sec-mq01 | deferred (overlap [cfg-03](universal.md#config)) | url broker с credentials в репозитории | секреты через env |
-| sec-mq02 | deferred | plaintext amqp/nats в публичный интернет | tls |
+| id | status | when | fix | severity |
+|----|--------|------|-----|----------|
+| sec-mq01 | implemented | url broker с credentials в репозитории | секреты через env | fail |
+| sec-mq02 | implemented | plaintext amqp/nats на remote broker | amqps или tls dial | fail |
+
+см. [security-owasp.md](security-owasp.md) — sec-mq01, sec-mq02

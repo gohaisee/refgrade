@@ -12,16 +12,16 @@
 
 ## проверки
 
-| id | when | why | fix | severity |
-|----|------|-----|-----|----------|
-| dead-01 | func недостижима по `deadcode` | никто не вызывает; мешает сопровождению | удалить или подключить | warn |
-| dead-02 | exported symbol в `internal/` недостижим даже с тестами | мёртвая поверхность API | удалить | info |
-| dead-03 | `U1000` unused func/type/const | шум | удалить |
-| dead-04 | `.go` файл вне сборки пакета (orphan) | путаница | удалить или починить package |
-| dead-05 | пустой package (только `package foo`) | ошибка | удалить package |
-| dead-06 | require в go.mod без импортов | шум supply chain | tidy |
-| dead-07 | большие закомментированные блоки | скрывает логику | удалить (история в git) |
-| dead-08 | test helper exported, но нужен в одном файле | лишняя видимость | unexport |
+| id | status | when | why | fix | severity |
+|----|--------|------|-----|-----|----------|
+| dead-01 | implemented | func недостижима по `deadcode` | никто не вызывает; мешает сопровождению | удалить или подключить | warn |
+| dead-02 | implemented | exported symbol в `internal/` недостижим даже с тестами | мёртвая поверхность API | удалить | info |
+| dead-03 | implemented | `U1000` unused func/type/const | шум | удалить | warn |
+| dead-04 | implemented | `.go` файл вне сборки пакета (orphan) | путаница | удалить или починить package | warn |
+| dead-05 | implemented | пустой package (только `package foo`) | ошибка | удалить package | warn |
+| dead-06 | implemented | require в go.mod без импортов | шум supply chain | tidy | warn |
+| dead-07 | implemented | большие закомментированные блоки | скрывает логику | удалить (история в git) | warn |
+| dead-08 | implemented | test helper exported, но нужен в одном файле | лишняя видимость | unexport | info |
 
 ## ложные срабатывания (в finding пометить, не auto-fail)
 

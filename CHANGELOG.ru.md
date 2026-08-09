@@ -4,6 +4,18 @@
 
 формат следует [keep a changelog](https://keepachangelog.com/ru/1.1.0/).
 
+## [Unreleased]
+
+### добавлено
+
+- ci coverage gate для `internal/check` (минимум 75%)
+- dogfood-гайд (`docs/en/dogfood.md`, `docs/ru/dogfood.md`)
+- колонка status у каждого check id: `implemented`, `overlap → X` или `runtime gap`
+
+### изменено
+
+- i18n footer отчёта: отдельные ключи для runtime gaps IDOR/BOLA, DAST и K8s IAM (`report.gap.idor`, `report.gap.dast`, `report.gap.k8s`)
+
 ## [1.0.0] - 2026-08-09
 
 первый стабильный релиз — сканер готовности go-сервисов к рефакторингу по полному стековому каталогу.

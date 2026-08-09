@@ -15,11 +15,13 @@
 | [checks/security-owasp.md](checks/security-owasp.md) | статическая безопасность |
 | [checks/dead-code.md](checks/dead-code.md) | модули с `cmd/` или `internal/` |
 
-статусы: `ok` · `warn` · `fail` · `n/a`
+статус скана: `ok` · `warn` · `fail` · `n/a`
 
-каждая строка: **id** · **when** · **why** · **fix** · **severity**
+статус строки каталога: `implemented` · `overlap → X` · `runtime gap`
 
-## статус реализации (v1.0.0)
+каждая строка: **id** · **status** · **when** · **why** · **fix** · **severity**
+
+## статус реализации (v2)
 
 | фаза | домен | зарегистрировано |
 |------|-------|------------------|
@@ -28,6 +30,10 @@
 | 3 | dead code, mongo, redis, messaging, security static | 59 |
 | | **итого** | **133** |
 
-overlap и deferred security id: [checks/security-owasp.md](checks/security-owasp.md#overlap-и-deferred-id-v100) (`sec-13`/`sec-14`, `sec-g01`…`sec-g03`, `sec-db01`…`sec-db03`, `sec-m*`, `sec-rd*`, `sec-mq*`, `sec-16` subprocess)
+security overlap: [checks/security-owasp.md](checks/security-owasp.md#overlap-checks)
+
+runtime gaps (footer): [checks/security-owasp.md](checks/security-owasp.md#честные-пробелы-в-footer-отчёта)
+
+dogfood: [dogfood.md](dogfood.md)
 
 [research-sources.md](research-sources.md)
