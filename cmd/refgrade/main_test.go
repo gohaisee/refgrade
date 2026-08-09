@@ -265,6 +265,83 @@ func TestRun_noArgs(t *testing.T) {
 	}
 }
 
+func TestRun_deadcode_badDeadCode(t *testing.T) {
+	root := filepath.Join("..", "..", "testdata", "fixtures", "bad-dead-code")
+	code := run([]string{"deadcode", root, "--include-tests"})
+	if code != exitFail {
+		t.Fatalf("exit code = %d", code)
+	}
+}
+
+func TestRun_scan_tags_integration_cfg01(t *testing.T) {
+	dir := t.TempDir()
+	if err := os.WriteFile(filepath.Join(dir, "go.mod"), []byte("module example.com/tags\n\ngo 1.22\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	hookDir := filepath.Join(dir, "internal", "integration")
+	if err := os.MkdirAll(hookDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(hookDir, "hook.go"), []byte(`//go:build integration
+
+package integration
+
+import "os"
+
+func Hook() string { return os.Getenv("HOOK") }
+`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	var buf bytes.Buffer
+	old := os.Stdout
+	r, w, err := os.Pipe()
+	if err != nil {
+		t.Fatal(err)
+	}
+	os.Stdout = w
+	code := run([]string{"scan", dir, "--tags", "integration"})
+	w.Close()
+	os.Stdout = old
+	buf.ReadFrom(r)
+	if code != exitFail || !strings.Contains(buf.String(), "cfg-01") {
+		t.Fatalf("exit=%d out=%q", code, buf.String())
+	}
+}
+
+func TestRun_scan_all_modules(t *testing.T) {
+	root := t.TempDir()
+	writeModule(t, filepath.Join(root, "go.mod"), "example.com/root")
+	writeModule(t, filepath.Join(root, "svc", "a", "go.mod"), "example.com/a")
+	var buf bytes.Buffer
+	old := os.Stdout
+	r, w, err := os.Pipe()
+	if err != nil {
+		t.Fatal(err)
+	}
+	os.Stdout = w
+	code := run([]string{"scan", root, "--all-modules"})
+	w.Close()
+	os.Stdout = old
+	buf.ReadFrom(r)
+	out := buf.String()
+	if code != exitOK || !strings.Contains(out, "example.com/root") || !strings.Contains(out, "example.com/a") {
+		t.Fatalf("exit=%d out=%q", code, out)
+	}
+}
+
+func writeModule(t *testing.T, path, module string) {
+	t.Helper()
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(path, []byte("module "+module+"\n\ngo 1.22\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	mainDir := filepath.Join(filepath.Dir(path), "cmd", "app")
+	os.MkdirAll(mainDir, 0o755)
+	os.WriteFile(filepath.Join(mainDir, "main.go"), []byte("package main\nfunc main() {}\n"), 0o644)
+}
+
 func copyDir(src, dst string) error {
 	return filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
 		if err != nil {

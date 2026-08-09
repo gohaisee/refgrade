@@ -117,13 +117,24 @@ func writeSummary(out *strings.Builder, b *i18n.Bundle, findings []check.Finding
 }
 
 func writeFooter(out *strings.Builder, b *i18n.Bundle) {
-	gap := b.T("report.gaps")
-	if gap == "" || gap == "report.gaps" {
+	lead := b.T("report.gaps.lead")
+	if lead == "" || lead == "report.gaps.lead" {
 		return
 	}
 	out.WriteByte('\n')
-	out.WriteString(gap)
+	out.WriteString(lead)
 	out.WriteByte('\n')
+	for _, key := range []string{"report.gap.idor", "report.gap.dast", "report.gap.k8s"} {
+		if line := b.T(key); line != "" && line != key {
+			out.WriteString("  - ")
+			out.WriteString(line)
+			out.WriteByte('\n')
+		}
+	}
+	if see := b.T("report.gaps.see"); see != "" && see != "report.gaps.see" {
+		out.WriteString(see)
+		out.WriteByte('\n')
+	}
 }
 
 func summarize(findings []check.Finding, statuses []check.CheckStatus, b *i18n.Bundle) string {

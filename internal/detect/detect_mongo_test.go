@@ -12,7 +12,7 @@ import (
 func TestDetect_findsMongoDriver(t *testing.T) {
 	t.Parallel()
 	root := filepath.Join("..", "..", "testdata", "fixtures", "bad-mongo-per-request")
-	mod, err := project.Load(context.Background(), root)
+	mod, err := project.Load(context.Background(), root, project.LoadOptions{})
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -35,7 +35,16 @@
 | command | поведение |
 |---------|-----------|
 | `refgrade scan` | dead-01…08 (dead-01/03/04/05/06/07 warn; dead-02/08 info) |
-| `refgrade deadcode` | отдельной командой нет — dead-проверки в `scan`, если `deadcode` и `staticcheck` на PATH |
+| `refgrade deadcode` | только dead-01…08; `--include-tests` передаёт `-test` в `deadcode`; `--tags` для go list и subprocess |
+
+## область scan
+
+| flag | поведение |
+|------|-----------|
+| `[path]` | подъём к ближайшему `go.mod` от path |
+| `--module path` | явный корень модуля |
+| `--all-modules` | scan вложенных `go.mod` под path (лимит глубины 8) |
+| `--tags integration,e2e` | build tags для `go list` и subprocess |
 
 ## fixtures
 

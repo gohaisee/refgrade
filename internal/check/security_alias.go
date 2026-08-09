@@ -1,6 +1,10 @@
 package check
 
-import "context"
+import (
+	"context"
+
+	"github.com/gohaisee/refgrade/internal/refgradeconfig"
+)
 
 // alias checker runs another checker and rewrites finding ids
 type aliasChecker struct {
@@ -21,7 +25,11 @@ func (c *aliasChecker) Run(ctx context.Context, mod ModuleView) ([]Finding, erro
 	if checkDisabled(mod, c.ID()) {
 		return nil, nil
 	}
-	findings, err := c.delegate.Run(ctx, mod)
+	cfg := mod.Config()
+	if cfg != nil && cfg.CheckEnabled(c.targetID) {
+		return nil, nil
+	}
+	findings, err := c.delegate.Run(ctx, aliasConfigView{ModuleView: mod, targetID: c.targetID})
 	if err != nil {
 		return nil, err
 	}
@@ -39,6 +47,31 @@ func (c *aliasChecker) Run(ctx context.Context, mod ModuleView) ([]Finding, erro
 		out = append(out, f)
 	}
 	return out, nil
+}
+
+// enables target id for delegate run when user disabled the base check
+type aliasConfigView struct {
+	ModuleView
+	targetID string
+}
+
+func (v aliasConfigView) Config() *refgradeconfig.Config {
+	base := v.ModuleView.Config()
+	if base == nil {
+		return &refgradeconfig.Config{Checks: map[string]refgradeconfig.CheckSetting{
+			v.targetID: {Enabled: true},
+		}}
+	}
+	checks := make(map[string]refgradeconfig.CheckSetting, len(base.Checks)+1)
+	for k, s := range base.Checks {
+		checks[k] = s
+	}
+	set := checks[v.targetID]
+	set.Enabled = true
+	checks[v.targetID] = set
+	cloned := *base
+	cloned.Checks = checks
+	return &cloned
 }
 
 func NewSec13() *aliasChecker {

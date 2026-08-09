@@ -25,7 +25,7 @@ func TestLoad_goodMinimal(t *testing.T) {
 	t.Parallel()
 
 	root := filepath.Join("..", "..", "testdata", "fixtures", "good-minimal")
-	mod, err := Load(context.Background(), root)
+	mod, err := Load(context.Background(), root, LoadOptions{})
 	if err != nil {
 		t.Fatalf("Load: %v", err)
 	}
@@ -73,7 +73,7 @@ func TestLoad_badGetenv(t *testing.T) {
 	t.Parallel()
 
 	root := filepath.Join("..", "..", "testdata", "fixtures", "bad-getenv")
-	mod, err := Load(context.Background(), root)
+	mod, err := Load(context.Background(), root, LoadOptions{})
 	if err != nil {
 		t.Fatalf("Load: %v", err)
 	}
@@ -91,8 +91,40 @@ func TestListPackages_goListFailure(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(dir, "go.mod"), []byte(content), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	_, err := listPackages(context.Background(), dir)
+	_, err := listPackages(context.Background(), dir, nil)
 	if err == nil {
 		t.Fatal("expected go list error for invalid go.mod")
+	}
+}
+
+func TestParseBuildTags(t *testing.T) {
+	t.Parallel()
+	got := ParseBuildTags("integration, e2e")
+	if len(got) != 2 {
+		t.Fatalf("ParseBuildTags = %v", got)
+	}
+}
+
+func TestFindModuleRoots_monorepo(t *testing.T) {
+	t.Parallel()
+	root := t.TempDir()
+	writeMod(t, filepath.Join(root, "go.mod"), "example.com/root")
+	writeMod(t, filepath.Join(root, "svc", "a", "go.mod"), "example.com/a")
+	roots, err := FindModuleRoots(root, defaultModuleSearchDepth)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(roots) != 2 {
+		t.Fatalf("roots = %v", roots)
+	}
+}
+
+func writeMod(t *testing.T, path, module string) {
+	t.Helper()
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(path, []byte("module "+module+"\n\ngo 1.22\n"), 0o644); err != nil {
+		t.Fatal(err)
 	}
 }
