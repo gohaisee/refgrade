@@ -27,7 +27,7 @@ func TestIntegration_badIgnoredError_err01Warn(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	findings, err := check.RunAll(context.Background(), mod, check.Catalog(), b.T)
+	findings, _, err := check.RunAll(context.Background(), mod, nil, check.ScanOptions{}, b.T)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -64,7 +64,7 @@ func TestIntegration_badDefaultClient_err03Fail(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	findings, err := check.RunAll(context.Background(), mod, check.Catalog(), b.T)
+	findings, _, err := check.RunAll(context.Background(), mod, nil, check.ScanOptions{}, b.T)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -85,7 +85,7 @@ func TestIntegration_badGetenv_cfg01Fail(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	findings, err := check.RunAll(context.Background(), mod, check.Catalog(), b.T)
+	findings, _, err := check.RunAll(context.Background(), mod, nil, check.ScanOptions{}, b.T)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -119,7 +119,7 @@ func TestIntegration_goodMinimal_noCfg01Fail(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	findings, err := check.RunAll(context.Background(), mod, check.Catalog(), b.T)
+	findings, _, err := check.RunAll(context.Background(), mod, nil, check.ScanOptions{}, b.T)
 	if err != nil {
 		t.Fatal(err)
 	}

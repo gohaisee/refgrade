@@ -1,0 +1,28 @@
+name: refgrade
+description: scan Go module refactor readiness
+branding:
+  icon: search
+  color: blue
+inputs:
+  path:
+    description: path to Go module root
+    required: false
+    default: .
+  format:
+    description: report format (text, markdown, json, sarif)
+    required: false
+    default: text
+  lang:
+    description: report language (en, ru)
+    required: false
+    default: en
+runs:
+  using: composite
+  steps:
+    - name: install refgrade
+      shell: bash
+      run: go install github.com/gohaisee/refgrade/cmd/refgrade@latest
+    - name: scan
+      shell: bash
+      run: refgrade scan "${{ inputs.path }}" --format "${{ inputs.format }}" --lang "${{ inputs.lang }}"
+      working-directory: ${{ github.workspace }}
