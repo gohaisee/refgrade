@@ -20,7 +20,7 @@ refgrade — это cli, не замена golangci-lint
 | `init` | шаблон `.refgrade.yaml` |
 | `explain <id>` | одна проверка человеческим языком |
 
-## стековые проверки (фаза 2)
+## стековые проверки (фаза 2–3)
 
 | домен | gates | ids |
 |-------|-------|-----|
@@ -28,6 +28,13 @@ refgrade — это cli, не замена golangci-lint
 | sql | pgx, gorm, sqlx, sqlc, ent, database/sql | sql-01..07, pgx-01..03, gorm-01..05, sqlx-01, sqlc-01, ent-01 |
 | graphql | gqlgen, graphql-go, graphql | gql-01..09, gqlgen-01..02, ggl-01..02 |
 | grpc | grpc, connect, grpc-gateway | grpc-01..06, conn-01..02, gw-01..02 |
+| mongodb | mongo-driver | mongo-01..08 |
+| redis | go-redis | redis-01..09 |
+| messaging | kafka, rabbitmq, nats | mq-01..05, kafka-01..03, rmq-01..03, nats-01..02 |
+| security | static (универсальные + gated) | sec-01..10, sec-15, sec-r*, sec-g04..06, sec-db05 |
+| dead code | универсальные + subprocess | dead-01..08, sec-16 через `--with-security` |
+
+**133** проверки в `internal/check/registry.go` (фаза 3 добавляет **57** к 76 фазы 2).
 
 ## коды выхода
 
