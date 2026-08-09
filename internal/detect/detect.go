@@ -39,6 +39,7 @@ var importToStack = map[string]string{
 	"go.mongodb.org/mongo-driver/mongo":         "mongo-driver",
 	"go.mongodb.org/mongo-driver/bson":          "mongo-driver",
 	"github.com/redis/go-redis/v9":              "go-redis",
+	"github.com/redis/go-redis/v8":              "go-redis",
 	"github.com/segmentio/kafka-go":             "kafka-go",
 	"github.com/rabbitmq/amqp091-go":            "rabbitmq",
 	"github.com/nats-io/nats.go":                "nats",
