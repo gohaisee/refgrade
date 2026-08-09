@@ -57,9 +57,16 @@ func Registry() []RegistryEntry {
 		entry(Meta{ID: "con-01", Domain: "concurrency", DefaultSeverity: SeverityInfo}, func() Checker { return NewCon01() }),
 		entry(Meta{ID: "dead-01", Domain: "dead-code", DefaultSeverity: SeverityWarn}, func() Checker { return NewDead01() }),
 		entry(Meta{ID: "dead-06", Domain: "dead-code", DefaultSeverity: SeverityWarn}, func() Checker { return NewDead06() }),
-		// gated placeholders for stack checks (n/a when gate missing)
+		entry(Meta{ID: "rest-01", Gates: []string{"gin", "echo", "chi", "net/http"}, Domain: "rest", DefaultSeverity: SeverityWarn}, func() Checker { return NewRest01() }),
 		entry(Meta{ID: "rest-02", Gates: []string{"gin", "echo", "chi", "net/http"}, Domain: "rest", DefaultSeverity: SeverityFail}, func() Checker { return NewRest02() }),
-		entry(Meta{ID: "sql-01", Gates: []string{"pgx", "gorm", "sqlx", "sqlc", "ent", "database/sql"}, Domain: "sql", DefaultSeverity: SeverityFail}, func() Checker { return NewSql01() }),
+		entry(Meta{ID: "rest-03", Gates: []string{"gin", "echo", "chi", "net/http"}, Domain: "rest", DefaultSeverity: SeverityWarn}, func() Checker { return NewRest03() }),
+		entry(Meta{ID: "rest-04", Gates: []string{"gin", "echo", "chi", "net/http"}, Domain: "rest", DefaultSeverity: SeverityWarn}, func() Checker { return NewRest04() }),
+		entry(Meta{ID: "rest-05", Gates: []string{"gin", "echo", "chi", "net/http"}, Domain: "rest", DefaultSeverity: SeverityFail}, func() Checker { return NewRest05() }),
+		entry(Meta{ID: "rest-06", Gates: []string{"gin", "echo", "chi", "net/http"}, Domain: "rest", DefaultSeverity: SeverityFail}, func() Checker { return NewRest06() }),
+		entry(Meta{ID: "rest-07", Gates: []string{"gin", "echo", "chi", "net/http"}, Domain: "rest", DefaultSeverity: SeverityWarn}, func() Checker { return NewRest07() }),
+		entry(Meta{ID: "rest-08", Gates: []string{"gin", "echo", "chi", "net/http"}, Domain: "rest", DefaultSeverity: SeverityWarn}, func() Checker { return NewRest08() }),
+		entry(Meta{ID: "rest-09", Gates: []string{"gin", "echo", "chi", "net/http"}, Domain: "rest", DefaultSeverity: SeverityInfo}, func() Checker { return NewRest09() }),
+		entry(Meta{ID: "rest-10", Gates: []string{"gin", "echo", "chi", "net/http"}, Domain: "rest", DefaultSeverity: SeverityWarn}, func() Checker { return NewRest10() }),
 	}
 }
 
