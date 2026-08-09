@@ -24,9 +24,9 @@
 |----|------|-----|
 | mongo-08 | bson handling in handler package | repository package |
 
-## security
+## security (catalog only — deferred in v1.0.0)
 
-| id | when | fix |
-|----|------|-----|
-| sec-m01 | connection uri with password in committed file | secret manager |
-| sec-m02 | tls disabled for remote cluster | enable tls in uri |
+| id | status | when | fix |
+|----|--------|------|-----|
+| sec-m01 | deferred (overlap [cfg-03](universal.md#config)) | connection uri with password in committed file | secret manager |
+| sec-m02 | deferred | tls disabled for remote cluster | enable tls in uri |

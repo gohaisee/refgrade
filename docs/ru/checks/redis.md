@@ -25,9 +25,9 @@
 |----|------|-----|
 | redis-09 | `PoolSize` / `MinIdleConns` ноль на prod-пути | настроить pool |
 
-## security
+## security (только каталог — deferred в v1.0.0)
 
-| id | when | fix |
-|----|------|-----|
-| sec-rd01 | пароль в исходниках | только env |
-| sec-rd02 | redis без tls в публичной сети | tls + acl |
+| id | статус | when | fix |
+|----|--------|------|-----|
+| sec-rd01 | deferred (overlap [cfg-03](universal.md#config)) | пароль в исходниках | только env |
+| sec-rd02 | deferred | redis без tls в публичной сети | tls + acl |

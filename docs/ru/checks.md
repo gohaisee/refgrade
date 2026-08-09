@@ -19,4 +19,15 @@
 
 каждая строка: **id** · **when** · **why** · **fix** · **severity**
 
+## статус реализации (v1.0.0)
+
+| фаза | домен | зарегистрировано |
+|------|-------|------------------|
+| 1 | universal (cfg, lay, lyr, err, tst, obs, con) | 23 |
+| 2 | rest, sql, graphql, grpc | 51 |
+| 3 | dead code, mongo, redis, messaging, security static | 59 |
+| | **итого** | **133** |
+
+overlap и deferred security id: [checks/security-owasp.md](checks/security-owasp.md#overlap-и-deferred-id-v100) (`sec-13`/`sec-14`, `sec-g01`…`sec-g03`, `sec-db01`…`sec-db03`, `sec-m*`, `sec-rd*`, `sec-mq*`, `sec-16` subprocess)
+
 [research-sources.md](research-sources.md)

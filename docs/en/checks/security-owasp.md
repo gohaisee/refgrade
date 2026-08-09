@@ -30,10 +30,29 @@ static heuristics only — runtime pentest and idor reproduction are **out of sc
 | sec-08 | `template.HTML(userInput)` | auto-escape; sanitize | fail |
 | sec-09 | http client to url from user input | ssrf guard; block private ranges | warn |
 | sec-10 | `.env` tracked in git | gitignore; rotate secrets | fail |
-| sec-13 | log of password/token/otp | redact | fail |
-| sec-14 | cors `*` + credentials | explicit origins | fail |
 | sec-15 | `net/http/pprof` import without build tag | dev-only | warn |
-| sec-16 | `govulncheck` findings (flag `--with-security`) | upgrade dep | fail |
+
+## overlap and deferred ids (v1.0.0)
+
+catalog rows below are **not** separate registry checks — use the implementing id or treat as deferred.
+
+| id | status | implemented as | notes |
+|----|--------|----------------|-------|
+| sec-13 | covered-by | [obs-02](universal.md#observability) | sensitive fields in log arguments |
+| sec-14 | covered-by | [rest-05](rest-gin-echo-chi.md) | cors wildcard + credentials (rest gate) |
+| sec-g01 | covered-by | [gql-05](graphql.md) | introspection without env gate |
+| sec-g02 | covered-by | [gql-04](graphql.md) | no query depth limit |
+| sec-g03 | covered-by | [gql-04](graphql.md) | no complexity/cost limit |
+| sec-db01 | covered-by | [sql-02](sql.md) | string-built sql |
+| sec-db02 | covered-by | [cfg-03](universal.md#config) | hardcoded secrets in source |
+| sec-db03 | covered-by | [pgx-03](sql.md) | `sslmode=disable` on remote |
+| sec-16 | subprocess | `govulncheck` via `--with-security` | not a registry row; optional tool |
+| sec-m01 | deferred | [cfg-03](universal.md#config) overlap | mongo uri password in repo |
+| sec-m02 | deferred | — | remote mongo tls — manual review |
+| sec-rd01 | deferred | [cfg-03](universal.md#config) overlap | redis password in source |
+| sec-rd02 | deferred | — | redis tls on public network |
+| sec-mq01 | deferred | [cfg-03](universal.md#config) overlap | broker url credentials in repo |
+| sec-mq02 | deferred | — | plaintext amqp/nats to public internet |
 
 ## rest-specific
 
@@ -45,25 +64,23 @@ static heuristics only — runtime pentest and idor reproduction are **out of sc
 | sec-r05 | `/admin` without role middleware | rbac check |
 | sec-r10 | webhook handler without hmac verify | signature + replay id |
 
-## graphql-specific
+## graphql-specific (implemented)
 
 | id | when | fix |
 |----|------|-----|
-| sec-g01 | introspection on in prod build | gate by env |
-| sec-g02 | no max query depth | server limit |
-| sec-g03 | no complexity/cost analysis | extension |
 | sec-g04 | `node(id:)` without ownership | authz in resolver |
 | sec-g05 | unlimited alias batching | cost limit / persisted queries |
 | sec-g06 | cookie auth + get queries | csrf token or post-only |
 
-## database
+`sec-g01`…`sec-g03` — covered-by [gql-04](graphql.md) / [gql-05](graphql.md); see [overlap table](#overlap-and-deferred-ids-v100)
+
+## database (implemented)
 
 | id | when | fix |
 |----|------|-----|
-| sec-db01 | string-built sql | parameters |
-| sec-db02 | dsn password in repo | env |
-| sec-db03 | `sslmode=disable` remote | tls |
 | sec-db05 | dynamic table/column from user | allowlist |
+
+`sec-db01`…`sec-db03` — covered-by [sql-02](sql.md), [cfg-03](universal.md#config), [pgx-03](sql.md); see [overlap table](#overlap-and-deferred-ids-v100)
 
 ## optional subprocess
 

@@ -19,4 +19,15 @@ status: `ok` · `warn` · `fail` · `n/a`
 
 each row: **id** · **when** · **why** · **fix** · **severity**
 
+## implementation status (v1.0.0)
+
+| phase | domain | registered checks |
+|-------|--------|-------------------|
+| 1 | universal (cfg, lay, lyr, err, tst, obs, con) | 23 |
+| 2 | rest, sql, graphql, grpc | 51 |
+| 3 | dead code, mongo, redis, messaging, security static | 59 |
+| | **total** | **133** |
+
+overlap and deferred security ids: [checks/security-owasp.md](checks/security-owasp.md#overlap-and-deferred-ids-v100) (`sec-13`/`sec-14`, `sec-g01`…`sec-g03`, `sec-db01`…`sec-db03`, `sec-m*`, `sec-rd*`, `sec-mq*`, `sec-16` subprocess)
+
 [research-sources.md](research-sources.md)

@@ -47,9 +47,9 @@
 
 синхронный rpc (grpc/http) и async queue решают разные задачи — флаг, если очередь используется там, где вызывающий ждёт данные peer, которые могли бы быть локальными (только info, не auto-fail)
 
-## security
+## security (только каталог — deferred в v1.0.0)
 
-| id | when | fix |
-|----|------|-----|
-| sec-mq01 | url broker с credentials в репозитории | секреты через env |
-| sec-mq02 | plaintext amqp/nats в публичный интернет | tls |
+| id | статус | when | fix |
+|----|--------|------|-----|
+| sec-mq01 | deferred (overlap [cfg-03](universal.md#config)) | url broker с credentials в репозитории | секреты через env |
+| sec-mq02 | deferred | plaintext amqp/nats в публичный интернет | tls |

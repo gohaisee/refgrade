@@ -30,10 +30,29 @@
 | sec-08 | `template.HTML(userInput)` | auto-escape; sanitize | fail |
 | sec-09 | http client на url от пользователя | ssrf guard; блок private ranges | warn |
 | sec-10 | `.env` в git | gitignore; ротация секретов | fail |
-| sec-13 | лог password/token/otp | редактировать | fail |
-| sec-14 | cors `*` + credentials | явный список origins | fail |
 | sec-15 | `net/http/pprof` без build tag | только dev | warn |
-| sec-16 | находки `govulncheck` (флаг `--with-security`) | обновить dep | fail |
+
+## overlap и deferred id (v1.0.0)
+
+строки каталога ниже **не** отдельные проверки в registry — смотри implementing id или пометку deferred.
+
+| id | статус | реализовано как | примечание |
+|----|--------|-----------------|------------|
+| sec-13 | covered-by | [obs-02](universal.md#observability) | чувствительные поля в аргументах лога |
+| sec-14 | covered-by | [rest-05](rest-gin-echo-chi.md) | cors wildcard + credentials (rest gate) |
+| sec-g01 | covered-by | [gql-05](graphql.md) | introspection без env gate |
+| sec-g02 | covered-by | [gql-04](graphql.md) | нет лимита глубины запроса |
+| sec-g03 | covered-by | [gql-04](graphql.md) | нет complexity/cost limit |
+| sec-db01 | covered-by | [sql-02](sql.md) | sql из конкатенации строк |
+| sec-db02 | covered-by | [cfg-03](universal.md#config) | захардкоженные секреты в исходниках |
+| sec-db03 | covered-by | [pgx-03](sql.md) | `sslmode=disable` на remote |
+| sec-16 | subprocess | `govulncheck` через `--with-security` | не строка registry; опциональный tool |
+| sec-m01 | deferred | overlap [cfg-03](universal.md#config) | пароль mongo uri в репо |
+| sec-m02 | deferred | — | tls удалённого mongo — ручной review |
+| sec-rd01 | deferred | overlap [cfg-03](universal.md#config) | пароль redis в исходниках |
+| sec-rd02 | deferred | — | redis tls в публичной сети |
+| sec-mq01 | deferred | overlap [cfg-03](universal.md#config) | credentials broker url в репо |
+| sec-mq02 | deferred | — | plaintext amqp/nats в публичный интернет |
 
 ## rest
 
@@ -45,25 +64,23 @@
 | sec-r05 | `/admin` без role middleware | rbac check |
 | sec-r10 | webhook без hmac verify | signature + replay id |
 
-## graphql
+## graphql (реализовано)
 
 | id | when | fix |
 |----|------|-----|
-| sec-g01 | introspection включён в prod build | gate по env |
-| sec-g02 | нет лимита глубины запроса | server limit |
-| sec-g03 | нет complexity/cost analysis | extension |
 | sec-g04 | `node(id:)` без ownership | authz в resolver |
 | sec-g05 | неограниченный alias batching | cost limit / persisted queries |
 | sec-g06 | cookie auth + get queries | csrf token или post-only |
 
-## database
+`sec-g01`…`sec-g03` — covered-by [gql-04](graphql.md) / [gql-05](graphql.md); см. [таблицу overlap](#overlap-и-deferred-id-v100)
+
+## database (реализовано)
 
 | id | when | fix |
 |----|------|-----|
-| sec-db01 | sql из конкатенации строк | parameters |
-| sec-db02 | пароль dsn в репо | env |
-| sec-db03 | `sslmode=disable` на remote | tls |
 | sec-db05 | table/column из user input | allowlist |
+
+`sec-db01`…`sec-db03` — covered-by [sql-02](sql.md), [cfg-03](universal.md#config), [pgx-03](sql.md); см. [таблицу overlap](#overlap-и-deferred-id-v100)
 
 ## опциональный subprocess
 
