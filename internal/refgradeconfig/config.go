@@ -267,14 +267,41 @@ func (m *ExcludeMatcher) Excluded(relPath string) bool {
 	}
 	rel := filepath.ToSlash(relPath)
 	for _, pat := range m.patterns {
-		if ok, _ := filepath.Match(pat, rel); ok {
-			return true
-		}
-		if ok, _ := filepath.Match(pat, filepath.Base(rel)); ok {
+		if matchGlob(pat, rel) {
 			return true
 		}
 	}
 	return false
+}
+
+func matchGlob(pat, rel string) bool {
+	pat = filepath.ToSlash(pat)
+	if strings.Contains(pat, "**") {
+		parts := strings.Split(pat, "**")
+		if len(parts) == 2 {
+			prefix := strings.TrimSuffix(parts[0], "/")
+			suffix := strings.TrimPrefix(parts[1], "/")
+			if prefix != "" && !strings.HasPrefix(rel, prefix) {
+				return false
+			}
+			if suffix == "" {
+				return true
+			}
+			if ok, _ := filepath.Match(suffix, filepath.Base(rel)); ok {
+				return true
+			}
+			return strings.Contains(rel, suffix)
+		}
+	}
+	if ok, _ := filepath.Match(pat, rel); ok {
+		return true
+	}
+	return okBaseMatch(pat, rel)
+}
+
+func okBaseMatch(pat, rel string) bool {
+	ok, _ := filepath.Match(pat, filepath.Base(rel))
+	return ok
 }
 
 // init template content

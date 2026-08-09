@@ -177,7 +177,11 @@ func HasIntegrationOrE2EBuildTag(src string) bool {
 }
 
 func buildTagHasIntegrationOrE2E(expr string) bool {
-	for _, part := range strings.FieldsFunc(strings.TrimSpace(expr), func(r rune) bool {
+	expr = strings.TrimSpace(expr)
+	if strings.HasPrefix(expr, "!") {
+		return false
+	}
+	for _, part := range strings.FieldsFunc(expr, func(r rune) bool {
 		return r == ' ' || r == '\t' || r == '|' || r == '&' || r == '!' || r == '(' || r == ')'
 	}) {
 		if part == "integration" || part == "e2e" {

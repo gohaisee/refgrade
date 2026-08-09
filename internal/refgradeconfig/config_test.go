@@ -111,7 +111,10 @@ func TestExcludeMatcher(t *testing.T) {
 
 	m := NewExcludeMatcher([]string{"**/generated/**", "*_gen.go"})
 	if !m.Excluded("internal/generated/foo.go") {
-		t.Fatal("expected glob match")
+		t.Fatal("expected **/generated/** match")
+	}
+	if !m.Excluded("internal/foo_gen.go") {
+		t.Fatal("expected *_gen.go match")
 	}
 }
 
