@@ -12,9 +12,17 @@ import (
 
 // loaded Go module: root, mod path, packages
 type Module struct {
-	Root     string
-	ModPath  string
-	Packages []*Package
+	Root         string
+	ModPath      string
+	Packages     []*Package
+	BuildTags    []string
+	IncludeTests bool
+}
+
+// options for go list and source scope
+type LoadOptions struct {
+	BuildTags    []string
+	IncludeTests bool
 }
 
 // one package directory with non-test Go files
@@ -36,7 +44,7 @@ func ModuleRoot(path string) (string, error) {
 }
 
 // resolves module root at path and lists packages via go list
-func Load(ctx context.Context, path string) (*Module, error) {
+func Load(ctx context.Context, path string, opts LoadOptions) (*Module, error) {
 	abs, err := filepath.Abs(path)
 	if err != nil {
 		return nil, fmt.Errorf("resolve path: %w", err)
@@ -47,15 +55,17 @@ func Load(ctx context.Context, path string) (*Module, error) {
 		return nil, err
 	}
 
-	pkgs, err := listPackages(ctx, root)
+	pkgs, err := listPackages(ctx, root, opts.BuildTags)
 	if err != nil {
 		return nil, err
 	}
 
 	return &Module{
-		Root:     root,
-		ModPath:  modPath,
-		Packages: pkgs,
+		Root:         root,
+		ModPath:      modPath,
+		Packages:     pkgs,
+		BuildTags:    append([]string(nil), opts.BuildTags...),
+		IncludeTests: opts.IncludeTests,
 	}, nil
 }
 
@@ -100,8 +110,12 @@ type listPackageJSON struct {
 	} `json:"Error"`
 }
 
-func listPackages(ctx context.Context, root string) ([]*Package, error) {
-	cmd := exec.CommandContext(ctx, "go", "list", "-json", "./...")
+func listPackages(ctx context.Context, root string, buildTags []string) ([]*Package, error) {
+	args := []string{"list", "-json", "./..."}
+	if len(buildTags) > 0 {
+		args = append(args, "-tags", strings.Join(buildTags, ","))
+	}
+	cmd := exec.CommandContext(ctx, "go", args...)
 	cmd.Dir = root
 	out, err := cmd.Output()
 	if err != nil {

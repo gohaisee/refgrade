@@ -19,7 +19,7 @@ func fixturePath(t *testing.T, name string) string {
 func runFixtureREST(t *testing.T, fixture, checkID string, minCount int) {
 	t.Helper()
 	root := fixturePath(t, fixture)
-	mod, err := project.Load(context.Background(), root)
+	mod, err := project.Load(context.Background(), root, project.LoadOptions{})
 	if err != nil {
 		t.Fatalf("Load: %v", err)
 	}
@@ -85,7 +85,7 @@ func TestIntegration_badNoRecover_rest10Warn(t *testing.T) {
 
 func TestIntegration_badIgnoredError_err01Warn(t *testing.T) {
 	root := fixturePath(t, "bad-ignored-error")
-	mod, err := project.Load(context.Background(), root)
+	mod, err := project.Load(context.Background(), root, project.LoadOptions{})
 	if err != nil {
 		t.Fatalf("Load: %v", err)
 	}
@@ -122,7 +122,7 @@ func TestIntegration_badIgnoredError_err01Warn(t *testing.T) {
 
 func TestIntegration_badDefaultClient_err03Fail(t *testing.T) {
 	root := fixturePath(t, "bad-default-client")
-	mod, err := project.Load(context.Background(), root)
+	mod, err := project.Load(context.Background(), root, project.LoadOptions{})
 	if err != nil {
 		t.Fatalf("Load: %v", err)
 	}
@@ -143,7 +143,7 @@ func TestIntegration_badDefaultClient_err03Fail(t *testing.T) {
 
 func TestIntegration_badGetenv_cfg01Fail(t *testing.T) {
 	root := fixturePath(t, "bad-getenv")
-	mod, err := project.Load(context.Background(), root)
+	mod, err := project.Load(context.Background(), root, project.LoadOptions{})
 	if err != nil {
 		t.Fatalf("Load: %v", err)
 	}
@@ -177,7 +177,7 @@ func TestIntegration_badGetenv_cfg01Fail(t *testing.T) {
 
 func TestIntegration_goodMinimal_noCfg01Fail(t *testing.T) {
 	root := fixturePath(t, "good-minimal")
-	mod, err := project.Load(context.Background(), root)
+	mod, err := project.Load(context.Background(), root, project.LoadOptions{})
 	if err != nil {
 		t.Fatalf("Load: %v", err)
 	}
@@ -201,7 +201,7 @@ func TestIntegration_goodMinimal_noCfg01Fail(t *testing.T) {
 func runFixtureSQL(t *testing.T, fixture, checkID string, minCount int) {
 	t.Helper()
 	root := fixturePath(t, fixture)
-	mod, err := project.Load(context.Background(), root)
+	mod, err := project.Load(context.Background(), root, project.LoadOptions{})
 	if err != nil {
 		t.Fatalf("Load: %v", err)
 	}
@@ -280,7 +280,7 @@ func TestIntegration_badEntLoop_ent01Warn(t *testing.T) {
 func runFixtureMQ(t *testing.T, fixture, checkID string, minCount int) {
 	t.Helper()
 	root := fixturePath(t, fixture)
-	mod, err := project.Load(context.Background(), root)
+	mod, err := project.Load(context.Background(), root, project.LoadOptions{})
 	if err != nil {
 		t.Fatalf("Load: %v", err)
 	}
