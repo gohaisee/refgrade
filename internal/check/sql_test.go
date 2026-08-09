@@ -35,6 +35,38 @@ func Activate(ctx context.Context, pool *pgxpool.Pool, ids []int) error {
 	}
 }
 
+func TestSql01_ignoresNonDBGetInLoop(t *testing.T) {
+	t.Parallel()
+	dir := t.TempDir()
+	path := writeGoFile(t, dir, "internal/service/service.go", `package service
+
+type Cache struct{}
+
+func (c *Cache) Get(key string) (int, bool) { return 0, false }
+
+func Load(c *Cache, keys []string) []string {
+	var out []string
+	for _, k := range keys {
+		if v, ok := c.Get(k); ok {
+			out = append(out, k)
+			_ = v
+		}
+	}
+	return out
+}
+`)
+	mod := stubModule{root: dir, files: []GoFile{{Path: path, RelPath: "internal/service/service.go"}}}
+	findings, err := NewSql01().Run(context.Background(), mod)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, f := range findings {
+		if f.ID == "sql-01" {
+			t.Fatalf("unexpected sql-01: %+v", findings)
+		}
+	}
+}
+
 func TestSql02_flagsSprintfSQL(t *testing.T) {
 	t.Parallel()
 	dir := t.TempDir()
