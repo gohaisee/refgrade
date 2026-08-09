@@ -177,3 +177,17 @@ func NewSql01() Checker {
 	return &stubGated{Base: Base{meta: Meta{ID: "sql-01", Gates: []string{"pgx", "gorm", "sqlx", "sqlc", "ent", "database/sql"}, Domain: "sql", DefaultSeverity: SeverityFail}}}
 }
 
+// stub gated check — sql stack pending
+type stubGated struct {
+	Base
+}
+
+func (s *stubGated) Run(ctx context.Context, mod ModuleView) ([]Finding, error) {
+	_ = ctx
+	_ = mod
+	return nil, nil
+}
+
+func NewSql01() Checker {
+	return &stubGated{Base: Base{meta: Meta{ID: "sql-01", Gates: []string{"pgx", "gorm", "sqlx", "sqlc", "ent", "database/sql"}, Domain: "sql", DefaultSeverity: SeverityFail}}}
+}
