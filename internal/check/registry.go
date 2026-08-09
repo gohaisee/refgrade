@@ -85,6 +85,19 @@ func Registry() []RegistryEntry {
 		entry(Meta{ID: "sqlx-01", Gates: []string{"sqlx"}, Domain: "sql", DefaultSeverity: SeverityWarn}, func() Checker { return NewSqlx01() }),
 		entry(Meta{ID: "sqlc-01", Gates: []string{"sqlc"}, Domain: "sql", DefaultSeverity: SeverityWarn}, func() Checker { return NewSqlc01() }),
 		entry(Meta{ID: "ent-01", Gates: []string{"ent"}, Domain: "sql", DefaultSeverity: SeverityWarn}, func() Checker { return NewEnt01() }),
+		entry(Meta{ID: "gql-01", Gates: []string{"gqlgen", "graphql-go", "graphql"}, Domain: "graphql", DefaultSeverity: SeverityFail}, func() Checker { return NewGql01() }),
+		entry(Meta{ID: "gql-02", Gates: []string{"gqlgen", "graphql-go", "graphql"}, Domain: "graphql", DefaultSeverity: SeverityWarn}, func() Checker { return NewGql02() }),
+		entry(Meta{ID: "gql-03", Gates: []string{"gqlgen"}, Domain: "graphql", DefaultSeverity: SeverityFail}, func() Checker { return NewGql03() }),
+		entry(Meta{ID: "gql-04", Gates: []string{"gqlgen", "graphql-go", "graphql"}, Domain: "graphql", DefaultSeverity: SeverityWarn}, func() Checker { return NewGql04() }),
+		entry(Meta{ID: "gql-05", Gates: []string{"gqlgen", "graphql-go", "graphql"}, Domain: "graphql", DefaultSeverity: SeverityWarn}, func() Checker { return NewGql05() }),
+		entry(Meta{ID: "gql-06", Gates: []string{"gqlgen", "graphql-go", "graphql"}, Domain: "graphql", DefaultSeverity: SeverityFail}, func() Checker { return NewGql06() }),
+		entry(Meta{ID: "gql-07", Gates: []string{"gqlgen"}, Domain: "graphql", DefaultSeverity: SeverityWarn}, func() Checker { return NewGql07() }),
+		entry(Meta{ID: "gql-08", Gates: []string{"gqlgen", "graphql-go", "graphql"}, Domain: "graphql", DefaultSeverity: SeverityInfo}, func() Checker { return NewGql08() }),
+		entry(Meta{ID: "gql-09", Gates: []string{"gqlgen", "graphql-go", "graphql"}, Domain: "graphql", DefaultSeverity: SeverityInfo}, func() Checker { return NewGql09() }),
+		entry(Meta{ID: "gqlgen-01", Gates: []string{"gqlgen"}, Domain: "graphql", DefaultSeverity: SeverityFail}, func() Checker { return NewGqlgen01() }),
+		entry(Meta{ID: "gqlgen-02", Gates: []string{"gqlgen"}, Domain: "graphql", DefaultSeverity: SeverityWarn}, func() Checker { return NewGqlgen02() }),
+		entry(Meta{ID: "ggl-01", Gates: []string{"graphql-go", "graphql"}, Domain: "graphql", DefaultSeverity: SeverityWarn}, func() Checker { return NewGgl01() }),
+		entry(Meta{ID: "ggl-02", Gates: []string{"graphql-go", "graphql"}, Domain: "graphql", DefaultSeverity: SeverityInfo}, func() Checker { return NewGgl02() }),
 	}
 }
 
