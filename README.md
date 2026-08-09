@@ -27,7 +27,9 @@ go test ./...
 
 ## status
 
-**phase 3** dead code (dead-01…08) + stack catalog — see [docs/en/checks.md](docs/en/checks.md)
+**v1.0.0** — **133 checks** implemented (universal + rest/sql/graphql/grpc + mongo/redis/messaging/security/dead code)
+
+see [CHANGELOG.md](CHANGELOG.md) · [docs/en/checks.md](docs/en/checks.md)
 
 `scan` exits **1** only on `fail` findings; `warn` prints in the report but exit **0**
 
