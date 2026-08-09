@@ -191,7 +191,7 @@ func TestRun_langPrecedence_yaml(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(dir, ".refgrade.yaml"), []byte("lang: ru\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(filepath.Join(dir, "go.mod"), []byte("module example.com/lang\n\ngo 1.22\n"), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(dir, "go.mod"), []byte("module github.com/example/langtest\n\ngo 1.22\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
 	if err := os.Mkdir(filepath.Join(dir, "cmd"), 0o755); err != nil {

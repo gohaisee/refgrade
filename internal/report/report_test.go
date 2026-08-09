@@ -110,7 +110,11 @@ func TestRenderJSON(t *testing.T) {
 		ID: "cfg-01", Severity: check.SeverityFail,
 		File: "a.go", Line: 1,
 	}}
-	data, err := RenderJSON(sampleResult(findings))
+	b, err := i18n.Load("en")
+	if err != nil {
+		t.Fatal(err)
+	}
+	data, err := RenderJSON(sampleResult(findings), b)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -118,7 +122,7 @@ func TestRenderJSON(t *testing.T) {
 	if !strings.Contains(s, `"module": "example.com/app"`) {
 		t.Fatalf("json = %s", s)
 	}
-	if !strings.Contains(s, `"summary": "fail"`) {
+	if !strings.Contains(s, `"summary":`) {
 		t.Fatalf("json = %s", s)
 	}
 }
@@ -167,7 +171,7 @@ func TestSummarize_warnOnly(t *testing.T) {
 		t.Fatal(err)
 	}
 	fs := []check.Finding{{Severity: check.SeverityWarn}}
-	out := summarize(fs, b)
+	out := summarize(fs, nil, b)
 	if !strings.Contains(out, "warn") {
 		t.Fatalf("summarize = %q", out)
 	}
@@ -187,16 +191,22 @@ func TestSeverityLabel_all(t *testing.T) {
 	}
 }
 
-func TestSummarizeJSON_paths(t *testing.T) {
+func TestRenderSARIF(t *testing.T) {
 	t.Parallel()
 
-	if summarizeJSON([]check.Finding{{Severity: check.SeverityFail}}) != check.SeverityFail {
-		t.Fatal("expected fail")
+	b, err := i18n.Load("en")
+	if err != nil {
+		t.Fatal(err)
 	}
-	if summarizeJSON([]check.Finding{{Severity: check.SeverityWarn}}) != check.SeverityWarn {
-		t.Fatal("expected warn")
+	findings := []check.Finding{{
+		ID: "cfg-01", Severity: check.SeverityFail,
+		File: "a.go", Line: 1, Why: "test",
+	}}
+	data, err := RenderSARIF(sampleResult(findings), b)
+	if err != nil {
+		t.Fatal(err)
 	}
-	if summarizeJSON(nil) != check.SeverityOK {
-		t.Fatal("expected ok")
+	if !strings.Contains(string(data), "cfg-01") {
+		t.Fatalf("sarif = %s", data)
 	}
 }

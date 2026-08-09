@@ -3,3 +3,7 @@
 /refgrade
 /bin/
 .DS_Store
+
+# agent-only docs (not for public OSS)
+AGENTS.md
+.cursor/
