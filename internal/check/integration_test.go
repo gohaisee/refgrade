@@ -276,3 +276,54 @@ func TestIntegration_badSqlc01_sqlc01Warn(t *testing.T) {
 func TestIntegration_badEntLoop_ent01Warn(t *testing.T) {
 	runFixtureSQL(t, "bad-ent-loop", "ent-01", 1)
 }
+
+func runFixtureMQ(t *testing.T, fixture, checkID string, minCount int) {
+	t.Helper()
+	root := fixturePath(t, fixture)
+	mod, err := project.Load(context.Background(), root)
+	if err != nil {
+		t.Fatalf("Load: %v", err)
+	}
+	stacks, err := detect.Detect(context.Background(), mod)
+	if err != nil {
+		t.Fatalf("Detect: %v", err)
+	}
+	if len(stacks) == 0 {
+		t.Fatalf("expected mq stack in %s", fixture)
+	}
+	stackNames := make([]string, len(stacks))
+	for i, s := range stacks {
+		stackNames[i] = s.Name
+	}
+	b, err := i18n.Load("en")
+	if err != nil {
+		t.Fatal(err)
+	}
+	findings, _, err := check.RunAll(context.Background(), mod, nil, check.ScanOptions{Stacks: stackNames}, b.T)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if check.CountByID(findings, checkID) < minCount {
+		t.Fatalf("expected at least %d %s in %s, got %+v", minCount, checkID, fixture, findings)
+	}
+}
+
+func TestIntegration_badMqEarlyAck_mq01Fail(t *testing.T) {
+	runFixtureMQ(t, "bad-mq-early-ack", "mq-01", 1)
+}
+
+func TestIntegration_badMqGoroutine_mq04Warn(t *testing.T) {
+	runFixtureMQ(t, "bad-mq-goroutine", "mq-04", 1)
+}
+
+func TestIntegration_badKafkaNoGroup_kafka01Fail(t *testing.T) {
+	runFixtureMQ(t, "bad-kafka-no-group", "kafka-01", 1)
+}
+
+func TestIntegration_badRmqSharedChan_rmq01Warn(t *testing.T) {
+	runFixtureMQ(t, "bad-rmq-shared-chan", "rmq-01", 1)
+}
+
+func TestIntegration_badNatsCoreCritical_nats01Warn(t *testing.T) {
+	runFixtureMQ(t, "bad-nats-core-critical", "nats-01", 1)
+}

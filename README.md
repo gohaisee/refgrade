@@ -27,7 +27,7 @@ go test ./...
 
 ## status
 
-**76 checks**: 25 universal + 51 stack-gated (rest, sql, graphql, grpc). catalog: [docs/en/checks.md](docs/en/checks.md)
+**phase 3** dead code (dead-01…08) + stack catalog — see [docs/en/checks.md](docs/en/checks.md)
 
 `scan` exits **1** only on `fail` findings; `warn` prints in the report but exit **0**
 
