@@ -4,6 +4,50 @@
 
 формат следует [keep a changelog](https://keepachangelog.com/ru/1.1.0/).
 
+## [Unreleased]
+
+## [2.0.0] - 2026-08-09
+
+релиз полного каталога — **152** проверки в registry (было **133**), overlap-алиасы security, доменные правила по стеку и cli `deadcode` ([#6](https://github.com/gohaisee/refgrade/pull/6)).
+
+### добавлено
+
+**расширение каталога (133 → 152)**
+
+- overlap-алиасы security: `sec-13`, `sec-14`, `sec-g01`…`sec-g03`, `sec-db01`…`sec-db03` — та же логика, что у базовых проверок, отдельные id в каталоге
+- graphql security: `sec-g07`…`sec-g10`
+- доменная security (mongo / redis / messaging): `sec-m01`…`sec-m02`, `sec-rd01`…`sec-rd02`, `sec-mq01`…`sec-mq02`
+- `sec-16` (`govulncheck`) в registry; warn без `--with-security`, subprocess при включённом флаге
+- integration-фикстуры для негативов mongo, redis и mq в `testdata/fixtures/`
+
+**cli**
+
+- `refgrade deadcode` — прогон `dead-01`…`dead-08` с `--include-tests` и build tags
+- `scan --all-modules` — все вложенные `go.mod` под путём; слияние JSON/SARIF по модулям
+
+**качество и документация**
+
+- guard registry: `TestRegistry_hasAtLeast150Checks`
+- dogfood-гайд (`docs/en/dogfood.md`, `docs/ru/dogfood.md`)
+- status у каждого check id: `implemented`, `overlap → X` или `runtime gap`
+- обновлены en/ru страницы каталога (security-owasp и стековые разделы)
+
+### изменено
+
+- overlap-алиасы не дублируют прогон, если базовая проверка включена; алиас остаётся, если базу отключили в конфиге
+- i18n footer отчёта: отдельные ключи для runtime gaps (IDOR/BOLA, DAST, K8s IAM)
+- путь deadcode учитывает `IncludeTests` в загрузке проекта и engine
+- расширено покрытие тестами security и доменных проверок
+
+### исправлено
+
+- правки по ревью PR #6: делегирование overlap в конфиге, merge отчёта для multi-module, краевые случаи deadcode cli и engine
+
+### примечания
+
+- `scan` выходит с **1** только при `fail`; `warn` печатается, но exit **0**
+- overlap и runtime gap — [docs/ru/checks/security-owasp.md](docs/ru/checks/security-owasp.md)
+
 ## [1.0.0] - 2026-08-09
 
 первый стабильный релиз — сканер готовности go-сервисов к рефакторингу по полному стековому каталогу.
@@ -47,4 +91,6 @@
 - `sec-16` (`govulncheck`) только с `--with-security`; не строка в registry
 - id каталога с пометками deferred / covered-by — [docs/ru/checks/security-owasp.md](docs/ru/checks/security-owasp.md)
 
+[Unreleased]: https://github.com/gohaisee/refgrade/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/gohaisee/refgrade/releases/tag/v2.0.0
 [1.0.0]: https://github.com/gohaisee/refgrade/releases/tag/v1.0.0
