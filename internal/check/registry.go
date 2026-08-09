@@ -57,9 +57,57 @@ func Registry() []RegistryEntry {
 		entry(Meta{ID: "con-01", Domain: "concurrency", DefaultSeverity: SeverityInfo}, func() Checker { return NewCon01() }),
 		entry(Meta{ID: "dead-01", Domain: "dead-code", DefaultSeverity: SeverityWarn}, func() Checker { return NewDead01() }),
 		entry(Meta{ID: "dead-06", Domain: "dead-code", DefaultSeverity: SeverityWarn}, func() Checker { return NewDead06() }),
-		// gated placeholders for stack checks (n/a when gate missing)
+		entry(Meta{ID: "rest-01", Gates: []string{"gin", "echo", "chi", "net/http"}, Domain: "rest", DefaultSeverity: SeverityWarn}, func() Checker { return NewRest01() }),
 		entry(Meta{ID: "rest-02", Gates: []string{"gin", "echo", "chi", "net/http"}, Domain: "rest", DefaultSeverity: SeverityFail}, func() Checker { return NewRest02() }),
-		entry(Meta{ID: "sql-01", Gates: []string{"pgx", "gorm", "sqlx", "sqlc", "ent", "database/sql"}, Domain: "sql", DefaultSeverity: SeverityFail}, func() Checker { return NewSql01() }),
+		entry(Meta{ID: "rest-03", Gates: []string{"gin", "echo", "chi", "net/http"}, Domain: "rest", DefaultSeverity: SeverityWarn}, func() Checker { return NewRest03() }),
+		entry(Meta{ID: "rest-04", Gates: []string{"gin", "echo", "chi", "net/http"}, Domain: "rest", DefaultSeverity: SeverityWarn}, func() Checker { return NewRest04() }),
+		entry(Meta{ID: "rest-05", Gates: []string{"gin", "echo", "chi", "net/http"}, Domain: "rest", DefaultSeverity: SeverityFail}, func() Checker { return NewRest05() }),
+		entry(Meta{ID: "rest-06", Gates: []string{"gin", "echo", "chi", "net/http"}, Domain: "rest", DefaultSeverity: SeverityFail}, func() Checker { return NewRest06() }),
+		entry(Meta{ID: "rest-07", Gates: []string{"gin", "echo", "chi", "net/http"}, Domain: "rest", DefaultSeverity: SeverityWarn}, func() Checker { return NewRest07() }),
+		entry(Meta{ID: "rest-08", Gates: []string{"gin", "echo", "chi", "net/http"}, Domain: "rest", DefaultSeverity: SeverityWarn}, func() Checker { return NewRest08() }),
+		entry(Meta{ID: "rest-09", Gates: []string{"gin", "echo", "chi", "net/http"}, Domain: "rest", DefaultSeverity: SeverityInfo}, func() Checker { return NewRest09() }),
+		entry(Meta{ID: "rest-10", Gates: []string{"gin", "echo", "chi", "net/http"}, Domain: "rest", DefaultSeverity: SeverityWarn}, func() Checker { return NewRest10() }),
+		entry(Meta{ID: "grpc-01", Gates: []string{"grpc"}, Domain: "grpc", DefaultSeverity: SeverityFail}, func() Checker { return NewGrpc01() }),
+		entry(Meta{ID: "grpc-02", Gates: []string{"grpc"}, Domain: "grpc", DefaultSeverity: SeverityWarn}, func() Checker { return NewGrpc02() }),
+		entry(Meta{ID: "grpc-03", Gates: []string{"grpc"}, Domain: "grpc", DefaultSeverity: SeverityWarn}, func() Checker { return NewGrpc03() }),
+		entry(Meta{ID: "grpc-04", Gates: []string{"grpc"}, Domain: "grpc", DefaultSeverity: SeverityFail}, func() Checker { return NewGrpc04() }),
+		entry(Meta{ID: "grpc-05", Gates: []string{"grpc"}, Domain: "grpc", DefaultSeverity: SeverityWarn}, func() Checker { return NewGrpc05() }),
+		entry(Meta{ID: "grpc-06", Gates: []string{"grpc"}, Domain: "grpc", DefaultSeverity: SeverityInfo}, func() Checker { return NewGrpc06() }),
+		entry(Meta{ID: "conn-01", Gates: []string{"connect"}, Domain: "grpc", DefaultSeverity: SeverityWarn}, func() Checker { return NewConn01() }),
+		entry(Meta{ID: "conn-02", Gates: []string{"connect"}, Domain: "grpc", DefaultSeverity: SeverityWarn}, func() Checker { return NewConn02() }),
+		entry(Meta{ID: "gw-01", Gates: []string{"grpc-gateway"}, Domain: "grpc", DefaultSeverity: SeverityWarn}, func() Checker { return NewGw01() }),
+		entry(Meta{ID: "gw-02", Gates: []string{"grpc-gateway"}, Domain: "grpc", DefaultSeverity: SeverityWarn}, func() Checker { return NewGw02() }),
+		entry(Meta{ID: "gql-01", Gates: []string{"gqlgen", "graphql-go", "graphql"}, Domain: "graphql", DefaultSeverity: SeverityFail}, func() Checker { return NewGql01() }),
+		entry(Meta{ID: "gql-02", Gates: []string{"gqlgen", "graphql-go", "graphql"}, Domain: "graphql", DefaultSeverity: SeverityWarn}, func() Checker { return NewGql02() }),
+		entry(Meta{ID: "gql-03", Gates: []string{"gqlgen"}, Domain: "graphql", DefaultSeverity: SeverityFail}, func() Checker { return NewGql03() }),
+		entry(Meta{ID: "gql-04", Gates: []string{"gqlgen", "graphql-go", "graphql"}, Domain: "graphql", DefaultSeverity: SeverityWarn}, func() Checker { return NewGql04() }),
+		entry(Meta{ID: "gql-05", Gates: []string{"gqlgen", "graphql-go", "graphql"}, Domain: "graphql", DefaultSeverity: SeverityWarn}, func() Checker { return NewGql05() }),
+		entry(Meta{ID: "gql-06", Gates: []string{"gqlgen", "graphql-go", "graphql"}, Domain: "graphql", DefaultSeverity: SeverityFail}, func() Checker { return NewGql06() }),
+		entry(Meta{ID: "gql-07", Gates: []string{"gqlgen"}, Domain: "graphql", DefaultSeverity: SeverityWarn}, func() Checker { return NewGql07() }),
+		entry(Meta{ID: "gql-08", Gates: []string{"gqlgen", "graphql-go", "graphql"}, Domain: "graphql", DefaultSeverity: SeverityInfo}, func() Checker { return NewGql08() }),
+		entry(Meta{ID: "gql-09", Gates: []string{"gqlgen", "graphql-go", "graphql"}, Domain: "graphql", DefaultSeverity: SeverityInfo}, func() Checker { return NewGql09() }),
+		entry(Meta{ID: "gqlgen-01", Gates: []string{"gqlgen"}, Domain: "graphql", DefaultSeverity: SeverityFail}, func() Checker { return NewGqlgen01() }),
+		entry(Meta{ID: "gqlgen-02", Gates: []string{"gqlgen"}, Domain: "graphql", DefaultSeverity: SeverityWarn}, func() Checker { return NewGqlgen02() }),
+		entry(Meta{ID: "ggl-01", Gates: []string{"graphql-go", "graphql"}, Domain: "graphql", DefaultSeverity: SeverityWarn}, func() Checker { return NewGgl01() }),
+		entry(Meta{ID: "ggl-02", Gates: []string{"graphql-go", "graphql"}, Domain: "graphql", DefaultSeverity: SeverityInfo}, func() Checker { return NewGgl02() }),
+		entry(Meta{ID: "sql-01", Gates: sqlGates(), Domain: "sql", DefaultSeverity: SeverityWarn}, func() Checker { return NewSql01() }),
+		entry(Meta{ID: "sql-02", Gates: sqlGates(), Domain: "sql", DefaultSeverity: SeverityFail}, func() Checker { return NewSql02() }),
+		entry(Meta{ID: "sql-03", Gates: sqlGates(), Domain: "sql", DefaultSeverity: SeverityWarn}, func() Checker { return NewSql03() }),
+		entry(Meta{ID: "sql-04", Gates: sqlGates(), Domain: "sql", DefaultSeverity: SeverityInfo}, func() Checker { return NewSql04() }),
+		entry(Meta{ID: "sql-05", Gates: sqlGates(), Domain: "sql", DefaultSeverity: SeverityFail}, func() Checker { return NewSql05() }),
+		entry(Meta{ID: "sql-06", Gates: sqlGates(), Domain: "sql", DefaultSeverity: SeverityWarn}, func() Checker { return NewSql06() }),
+		entry(Meta{ID: "sql-07", Gates: sqlGates(), Domain: "sql", DefaultSeverity: SeverityInfo}, func() Checker { return NewSql07() }),
+		entry(Meta{ID: "pgx-01", Gates: []string{"pgx"}, Domain: "sql", DefaultSeverity: SeverityWarn}, func() Checker { return NewPgx01() }),
+		entry(Meta{ID: "pgx-02", Gates: []string{"pgx"}, Domain: "sql", DefaultSeverity: SeverityInfo}, func() Checker { return NewPgx02() }),
+		entry(Meta{ID: "pgx-03", Gates: []string{"pgx"}, Domain: "sql", DefaultSeverity: SeverityFail}, func() Checker { return NewPgx03() }),
+		entry(Meta{ID: "gorm-01", Gates: []string{"gorm"}, Domain: "sql", DefaultSeverity: SeverityFail}, func() Checker { return NewGorm01() }),
+		entry(Meta{ID: "gorm-02", Gates: []string{"gorm"}, Domain: "sql", DefaultSeverity: SeverityWarn}, func() Checker { return NewGorm02() }),
+		entry(Meta{ID: "gorm-03", Gates: []string{"gorm"}, Domain: "sql", DefaultSeverity: SeverityWarn}, func() Checker { return NewGorm03() }),
+		entry(Meta{ID: "gorm-04", Gates: []string{"gorm"}, Domain: "sql", DefaultSeverity: SeverityWarn}, func() Checker { return NewGorm04() }),
+		entry(Meta{ID: "gorm-05", Gates: []string{"gorm"}, Domain: "sql", DefaultSeverity: SeverityWarn}, func() Checker { return NewGorm05() }),
+		entry(Meta{ID: "sqlx-01", Gates: []string{"sqlx"}, Domain: "sql", DefaultSeverity: SeverityWarn}, func() Checker { return NewSqlx01() }),
+		entry(Meta{ID: "sqlc-01", Gates: []string{"sqlc"}, Domain: "sql", DefaultSeverity: SeverityWarn}, func() Checker { return NewSqlc01() }),
+		entry(Meta{ID: "ent-01", Gates: []string{"ent"}, Domain: "sql", DefaultSeverity: SeverityWarn}, func() Checker { return NewEnt01() }),
 	}
 }
 
@@ -67,12 +115,12 @@ func entry(meta Meta, factory func() Checker) RegistryEntry {
 	return RegistryEntry{Meta: meta, Factory: factory}
 }
 
-// Catalog returns all built-in checkers (legacy)
+// legacy catalog of all built-in checkers
 func Catalog() []Checker {
 	return CatalogForStack(nil)
 }
 
-// CatalogForStack returns checkers applicable to detected stacks
+// checkers applicable to detected stacks
 func CatalogForStack(stacks []string) []Checker {
 	stackSet := make(map[string]struct{}, len(stacks))
 	for _, s := range stacks {
