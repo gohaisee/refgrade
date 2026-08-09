@@ -115,12 +115,12 @@ func entry(meta Meta, factory func() Checker) RegistryEntry {
 	return RegistryEntry{Meta: meta, Factory: factory}
 }
 
-// Catalog returns all built-in checkers (legacy)
+// legacy catalog of all built-in checkers
 func Catalog() []Checker {
 	return CatalogForStack(nil)
 }
 
-// CatalogForStack returns checkers applicable to detected stacks
+// checkers applicable to detected stacks
 func CatalogForStack(stacks []string) []Checker {
 	stackSet := make(map[string]struct{}, len(stacks))
 	for _, s := range stacks {

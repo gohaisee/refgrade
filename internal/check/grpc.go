@@ -54,7 +54,6 @@ var (
 
 	grpcMetadataTrustKeys = []string{
 		"x-user-id",
-		"x-user-id",
 		"x-is-admin",
 	}
 )

@@ -476,12 +476,21 @@ func isDbQueryCall(f *astutil.File, call *ast.CallExpr) bool {
 	if !ok {
 		return false
 	}
-	_, name, ok := f.Selector(sel)
-	if !ok {
-		name = sel.Sel.Name
+	name := sel.Sel.Name
+	if _, ok := dbQueryMethods[name]; !ok {
+		return false
 	}
-	_, ok = dbQueryMethods[name]
-	return ok
+	if imp, resolved, ok := selectorImport(f, sel); ok {
+		if !isSQLStorageImport(imp) {
+			return false
+		}
+		_, ok = dbQueryMethods[resolved]
+		return ok
+	}
+	if !looksLikeDBReceiver(sel.X) {
+		return false
+	}
+	return fileHasSQLStorageImport(f) || isResolverFilePath(f.RelPath)
 }
 
 func fileHasBatchHint(f *astutil.File) bool {
