@@ -4,7 +4,7 @@ refgrade is a cli, not a linter replacement
 
 ## pipeline
 
-1. load module (`go/packages`)
+1. load module (`go list -json ./...`)
 2. **detect** stack — gin, gqlgen, pgx, mongo, …
 3. run **universal** checks (config, layers, errors, tests, dead code)
 4. run **stack** checks only when the library is present
