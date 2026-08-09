@@ -34,8 +34,8 @@
 
 | command | поведение |
 |---------|-----------|
-| `refgrade scan` | dead-01…06 на уровне warn |
-| `refgrade deadcode` (план) | deep mode, `--include-tests`, опционально `--blame` |
+| `refgrade scan` | dead-01…08 (dead-01/03/04/05/06/07 warn; dead-02/08 info) |
+| `refgrade deadcode` | отдельной командой нет — dead-проверки в `scan`, если `deadcode` и `staticcheck` на PATH |
 
 ## fixtures
 
