@@ -305,7 +305,7 @@ func (c *Sec09) Run(ctx context.Context, mod ModuleView) ([]Finding, error) {
 	var findings []Finding
 	pool.Inspect(func(f *astutil.File, n ast.Node) bool {
 		call, ok := n.(*ast.CallExpr)
-		if !ok || !isOutboundHTTPWithURLArg(call) {
+		if !ok || !isOutboundHTTPWithURLArg(f, call) {
 			return true
 		}
 		urlArg := outboundHTTPURLArg(call)
@@ -997,19 +997,47 @@ func isTemplateHTMLCall(f *astutil.File, call *ast.CallExpr) bool {
 	return f.ImportPathOf(ident.Name) == "html/template" || ident.Name == "template"
 }
 
-func isOutboundHTTPWithURLArg(call *ast.CallExpr) bool {
+func isOutboundHTTPWithURLArg(f *astutil.File, call *ast.CallExpr) bool {
 	sel, ok := call.Fun.(*ast.SelectorExpr)
 	if !ok {
 		return false
 	}
 	switch sel.Sel.Name {
-	case "Get", "Head", "Post", "PostForm":
-		return true
+	case "Get":
+		if len(call.Args) != 1 {
+			return false
+		}
+		return isHTTPClientSelector(f, sel)
+	case "Head", "Post", "PostForm":
+		return isHTTPClientSelector(f, sel)
 	case "NewRequest", "NewRequestWithContext":
-		return len(call.Args) >= 2
+		return isHTTPPackageSelector(f, sel) && len(call.Args) >= 2
 	default:
 		return false
 	}
+}
+
+func isHTTPPackageSelector(f *astutil.File, sel *ast.SelectorExpr) bool {
+	ident, ok := sel.X.(*ast.Ident)
+	if !ok {
+		return false
+	}
+	return f.ImportPathOf(ident.Name) == "net/http" || ident.Name == "http"
+}
+
+func isHTTPClientSelector(f *astutil.File, sel *ast.SelectorExpr) bool {
+	if isHTTPPackageSelector(f, sel) {
+		return true
+	}
+	if isRedisLikeReceiver(sel.X) {
+		return false
+	}
+	ident, ok := sel.X.(*ast.Ident)
+	if !ok {
+		return false
+	}
+	lower := strings.ToLower(ident.Name)
+	return lower == "client" || lower == "httpclient" || strings.HasSuffix(lower, "httpclient")
 }
 
 func outboundHTTPURLArg(call *ast.CallExpr) ast.Expr {

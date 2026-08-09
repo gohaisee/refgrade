@@ -502,7 +502,7 @@ func (c *Nats02) Run(ctx context.Context, mod ModuleView) ([]Finding, error) {
 		if !funcHasJetStreamConsume(fn) {
 			return true
 		}
-		if funcHasNatsAckHandling(f, fn) {
+		if funcHasNatsAckHandling(fn) {
 			return true
 		}
 		findings = append(findings, finding(c.ID(), sev, f.RelPath, pool.Line(fn)))
@@ -900,11 +900,29 @@ func funcHasJetStreamConsume(fn *ast.FuncDecl) bool {
 	return found
 }
 
-func funcHasNatsAckHandling(f *astutil.File, fn *ast.FuncDecl) bool {
-	for _, hint := range natsAckHints {
-		if strings.Contains(string(f.Src), hint) {
-			return true
-		}
+func funcHasNatsAckHandling(fn *ast.FuncDecl) bool {
+	if fn.Body == nil {
+		return false
 	}
-	return false
+	found := false
+	ast.Inspect(fn.Body, func(n ast.Node) bool {
+		switch v := n.(type) {
+		case *ast.Ident:
+			for _, hint := range natsAckHints {
+				if v.Name == hint || strings.Contains(v.Name, hint) {
+					found = true
+					return false
+				}
+			}
+		case *ast.SelectorExpr:
+			for _, hint := range natsAckHints {
+				if v.Sel.Name == hint || strings.Contains(v.Sel.Name, hint) {
+					found = true
+					return false
+				}
+			}
+		}
+		return true
+	})
+	return found
 }
