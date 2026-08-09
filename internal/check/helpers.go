@@ -1,7 +1,6 @@
 package check
 
 import (
-	"context"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -158,36 +157,3 @@ func checkDisabled(mod ModuleView, id string) bool {
 	return !cfg.CheckEnabled(id)
 }
 
-// stub gated checks — implemented in section C/D
-type stubGated struct {
-	Base
-}
-
-func NewRest02() Checker {
-	return &stubGated{Base: Base{meta: Meta{ID: "rest-02", Gates: []string{"gin", "echo", "chi", "net/http"}, Domain: "rest", DefaultSeverity: SeverityFail}}}
-}
-
-func (s *stubGated) Run(ctx context.Context, mod ModuleView) ([]Finding, error) {
-	_ = ctx
-	_ = mod
-	return nil, nil
-}
-
-func NewSql01() Checker {
-	return &stubGated{Base: Base{meta: Meta{ID: "sql-01", Gates: []string{"pgx", "gorm", "sqlx", "sqlc", "ent", "database/sql"}, Domain: "sql", DefaultSeverity: SeverityFail}}}
-}
-
-// stub gated check — sql stack pending
-type stubGated struct {
-	Base
-}
-
-func (s *stubGated) Run(ctx context.Context, mod ModuleView) ([]Finding, error) {
-	_ = ctx
-	_ = mod
-	return nil, nil
-}
-
-func NewSql01() Checker {
-	return &stubGated{Base: Base{meta: Meta{ID: "sql-01", Gates: []string{"pgx", "gorm", "sqlx", "sqlc", "ent", "database/sql"}, Domain: "sql", DefaultSeverity: SeverityFail}}}
-}
